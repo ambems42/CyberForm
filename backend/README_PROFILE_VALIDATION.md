@@ -27,7 +27,11 @@ Schéma Mongo `attack_graphs` : version **1.2** ; graphes anciens avec `non_huma
 - **Hybrid** : comptes, identifiants, accès distant (`T1078`, `T1021`, `T1110`, `T1133`, `T1056`, `T1552`, `T1550`, `T1098`, …).
 - **Non-human** : exclu du **graphe** de ce produit ; toujours filtré côté génération / validation.
 
-Les défauts par famille d’actif et le pool de signature privilégient **human/hybrid**. Pénalités qualité si **T1078** apparaît sur **tous** les actifs (biais). `generate_profile_risk` expose toujours `human_techniques`, `hybrid_techniques` et `non_human_techniques` (souvent vide).
+Les défauts par famille d’actif et le pool de signature privilégient **human/hybrid**. Pénalités qualité si **T1078** apparaît sur **tous** les actifs (biais). `generate_profile_risk` expose toujours `human_techniques`, `hybrid_techniques` et `non_human_techniques` (souvent vide pour la dernière).
+
+## Intégration API (human + hybrid)
+
+Les documents **`profile_risks`** stockent les trois listes séparément. Pour les parcours **quiz** et **formation**, le backend agrège **`human_techniques` + `hybrid_techniques`** lorsque les menaces du profil sont lues (ex. `get_all_techniques_from_profile_risk(..., human_only=True)` dans `app.py`). Les techniques **hybrid** ne doivent donc pas être omises côté métier. Les mêmes principes s’appliquent au calcul de certains agrégats sur les actifs et à la fusion des graphes dans `generate.py` (`merge_and_enrich_techniques` inclut la clé `hybrid_techniques` lorsqu’elle est présente).
 
 ## Réponse `POST /generate_profile_risk`
 
@@ -52,6 +56,8 @@ Champs ajoutés :
 ## Admin
 
 `GET /api/users` inclut `profile_acceptable` et `profile_quality_score` (depuis `profile_risks`). Filtre **« Profil à revoir »** : collaborateurs avec `profile_acceptable === false`.
+
+Les **seuils d’organisation** (politique, techniques critiques, plafonds MITRE par ligne, etc.) sont édités dans l’interface **Admin → Seuils & objectifs** et persistés via **`GET` / `PUT` / `POST` `/api/admin/organization_settings`** (`app.py`, chargement `load_organization_settings`). Ces réglages influencent l’évaluation des quiz et le calcul des risques (seuil politique, règle « critique », overrides par technique).
 
 ## Boucle de réparation
 

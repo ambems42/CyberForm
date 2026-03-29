@@ -16,7 +16,9 @@ L’application comporte deux espaces selon le rôle renvoyé au login (`basic_i
 - **AuthGuard** : exige un `userID` en session. Protège `/user`, `/editprofile`, `/quiz`, `/formation`.
 - **AdminGuard** : exige en plus `userData.role === 'admin'`. Protège `/admin`. Sinon redirection vers `/login`.
 
-**Header** : selon le rôle, affiche le lien « Espace utilisateur » ou « Espace administrateur ». La restriction user/admin est côté frontend ; les API backend ne vérifient pas le rôle actuellement.
+**Header** : selon le rôle, affiche le lien « Espace utilisateur » ou « Espace administrateur ».
+
+**Backend** : les routes sensibles (création d’utilisateurs, statistiques globales, paramètres d’organisation, métriques quiz, etc.) utilisent `@require_jwt(require_admin=True)` dans `app.py`. Les routes utilisateur standard vérifient l’identité via JWT (`check_self_or_admin` ou équivalent) pour limiter l’accès aux données du bon `userID`.
 
 ---
 
@@ -90,6 +92,10 @@ Ces champs sont aussi enregistrés dans `quiz_history` pour alimenter la génér
 | `POST /generate_quiz` | Génère un quiz (optionnel : `required_scores`, `user_scores_per_thread` ; sinon pris depuis la dernière évaluation). |
 | `POST /generate_training` | Génère la formation ; utilise `results` (avec `required_scores` / `user_scores_per_thread`) pour prioriser les threads en écart. |
 | `GET /api/risk/scores_per_thread?userID=...&quiz_type=pre` | Retourne les derniers `required_scores` et `user_scores_per_thread` pour un utilisateur (pour affichage ou intégration). |
+| `GET /api/statistics` | Statistiques globales (admin) : moyenne de risque affichée, % à risque, % objectifs, % utilisateurs avec **formation encore planifiée** (`nextTrainingDate` ≥ maintenant). |
+| `GET /api/statistics/mois` | Séries mensuelles (risque, vulnérabilité, objectifs, formations planifiées à venir par mois d’évaluation). |
+| `GET` / `PUT` / `POST` `/api/admin/organization_settings` | Lecture et mise à jour des paramètres d’organisation (seuils, critiques MITRE, catalogue). |
+| `POST /generate_profile_risk` | Génère ou met à jour le profil de risque utilisateur (validation MITRE, qualité, réparation optionnelle). |
 
 ---
 
@@ -107,7 +113,9 @@ Generative IA (required_scores + user_scores_per_thread)
     → learning-content (formation)  → Utilisateur
 ```
 
-Les collections Mongo clés sont : `risk_history`, `quiz_history` (avec `required_scores`, `user_scores_per_thread`), `profile_risks`, `attack_graphs`, `trainings`.
+Les collections Mongo clés incluent notamment : `users`, `quiz_history` (avec `required_scores`, `user_scores_per_thread`), `quiz_genere`, `profile_risks` (par utilisateur : par actif, listes **`human_techniques`**, **`hybrid_techniques`**, **`non_human_techniques`** dérivées des techniques exposées), `attack_graphs`, `trainings`, `assets_catalog`, `role_assets`, paramètres d’organisation selon stockage backend.
+
+**Techniques hybrid** : le profil de risque sépare explicitement les techniques classées **hybrid** dans `profile_risks`. Les chemins qui alimentent quiz, formation et statistiques agrègent **human + hybrid** comme menaces comportementales (ex. `get_all_techniques_from_profile_risk` dans `app.py`). Les graphes d’attaque fusionnent en pratique human et hybrid dans `human_related` ; les APIs catalogue (`/api/assets_catalog`, `/api/user/.../assets`) fusionnent aussi `hybrid_techniques` avec les techniques « comportementales » pour l’affichage.
 
 ---
 
@@ -146,8 +154,10 @@ Les collections Mongo clés sont : `risk_history`, `quiz_history` (avec `require
 - **Framework** : Flask.
 - **Fichier principal** : `app.py`.
 - **Modules auxiliaires** :
-  - `generate.py` : logique de génération de quiz et de formation (sélection des cibles, prompts IA, post-traitement HTML).
-  - `module.py` : fonctions utilitaires pour la gestion des profils de risques, graphes d’attaque, etc. (ex. `ensure_attack_graph_for_asset`).
+  - `generate.py` : génération de quiz et de formation (`generate_profile_risk`, sélection des cibles, prompts IA, post-traitement HTML).
+  - `module.py` : graphes d’attaque, normalisation MITRE, `ensure_attack_graph_for_asset`, classification **human / hybrid / non_human** alignée sur `m.py`.
+  - `profile_validation.py` : règles de cohérence des profils et graphes (diversité, bucket `non_human` vide, etc.) — voir `backend/README_PROFILE_VALIDATION.md`.
+  - `m.py` : `mitre_classification`, facteur humain, libellés MITRE.
 - **Technologies** :
   - **Base de données** : MongoDB (collections `profile_risks`, `risk_history`, `quiz_history`, `attack_graphs`, `trainings`, etc.).
   - **IA générative** : appel à un modèle externe (via API HTTP) pour produire questions et contenus de formation à partir du profil et de l’historique.
@@ -184,14 +194,15 @@ Les collections Mongo clés sont : `risk_history`, `quiz_history` (avec `require
 ### 2. Parcours administrateur – Supervision et création de comptes
 
 1. L’admin se connecte → redirection vers `/admin` (protégé par `AdminGuard`).
-2. `AdminComponent` :
-   - Récupère la liste des utilisateurs (via `UserService` / endpoints backend correspondants).
-   - Affiche les scores agrégés, statistiques par mois (`StatisticsMoisComponent`), comparaisons de scores, etc.
-3. Création de comptes :
-   - `CreerUserComponent` permet à l’admin de créer de nouveaux utilisateurs.
-   - Le backend crée le document utilisateur dans MongoDB et éventuellement un profil de risque par défaut.
-4. Suivi et pilotage :
-   - L’admin peut consulter l’historique des quiz (`quiz_history`), suivre la progression par thread/technique, et ajuster les politiques (seuils de risque) si des écrans dédiés sont exposés.
+2. `AdminComponent` — **colonne de droite (onglets)** :
+   - **Comparaison des scores** : `ComparaisonScoreComponent`.
+   - **Seuils & objectifs** : formulaire des paramètres d’organisation (`GET` / `PUT` / `POST` `/api/admin/organization_settings`) — seuil politique, fenêtre « appris », techniques critiques MITRE, plafonds par technique (catalogue), etc.
+   - **Statistiques mensuelles** : `StatisticsMoisComponent` (`GET /api/statistics/mois`).
+   - **Métriques quiz (qualité)** : métriques détaillées (`GET /api/quiz_quality_metrics`, export CSV).
+   Les KPI en tête de page (risque, objectifs, **formations planifiées**) s’appuient sur `GET /api/statistics` : le pourcentage « formations planifiées » compte les utilisateurs dont **`nextTrainingDate` est à venir** (date ≥ maintenant), pas seulement une date renseignée dans le passé.
+3. Liste des utilisateurs (colonne gauche) : filtres (dont profil MITRE à revoir), dates d’évaluation / formation, statuts.
+4. Création de comptes : `CreerUserComponent` + API admin dédiées.
+5. Suivi : historique quiz (`quiz_history`), comparaisons, réglages organisationnels persistés (collection ou document d’organisation selon implémentation backend).
 
 ---
 

@@ -16,6 +16,7 @@ Mongo : champs dans `quiz_genere.quality_metrics` (score, seuil, tentatives, etc
 
 ## Interface admin (Angular)
 
-Dans l’app : route **`/admin`** → onglet **« Métriques quiz (qualité) »**.  
+Dans l’app : route **`/admin`**, colonne de droite. Les onglets sont dans l’ordre : **Comparaison des scores** → **Seuils & objectifs** → **Statistiques mensuelles** → **Métriques quiz (qualité)** (ce dernier correspond à cet écran).
+
 Les données sont chargées via `QuizService.getQuizQualityMetrics()` (même schéma que l’API ci-dessus).  
 Le bouton **« Télécharger CSV »** ouvre `GET /api/quiz_quality_metrics.csv` avec les mêmes filtres (`userID`, `limit`).

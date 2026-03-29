@@ -1,5 +1,7 @@
 # Pipeline formation (aligné sur le quiz)
 
+Implémentation principale : `backend/generate.py` (`generate_training_content`, blueprints, validation, qualité) et exposition HTTP dans `backend/app.py` (`POST /generate_training`).
+
 ## Comportement
 
 1. **Blueprint par module** (`build_training_module_blueprint`) : `technique_id` / `technique_name` canoniques (`m.MITRE_NAMES`), niveau Bloom cyclique, actif, contexte pré/post.
