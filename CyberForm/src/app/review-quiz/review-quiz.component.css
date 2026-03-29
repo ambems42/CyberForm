@@ -1,0 +1,114 @@
+.review-container {
+  max-width: 950px;
+  margin: 2rem auto;
+  padding: 1.25rem;
+  background: #fff;
+  border-radius: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+}
+
+.question-card {
+  background: #f9f9f9;
+  border-bottom: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.question-card em {
+  font-style: normal;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #0b0101;
+}
+
+.question-card p {
+  margin: 0.45rem 0;
+}
+
+.question-card p strong {
+  font-weight: bold;
+  color: #000;
+}
+
+.question-card ul {
+  margin: 0.5rem 0 0.75rem 1.25rem;
+  padding: 0;
+}
+
+.question-card li {
+  margin-bottom: 0.35rem;
+}
+
+.correct {
+  color: green;
+  font-weight: bold;
+}
+
+.incorrect {
+  color: red;
+  font-weight: bold;
+}
+
+.summary {
+  background: #eef4fb;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.training-content {
+  background: #fff3cd;
+  padding: 1rem;
+  border-left: 5px solid #ffc107;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.65rem 1rem;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.back-link:hover {
+  background: #0056b3;
+}
+
+.error {
+  color: red;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .review-container {
+    margin: 1rem;
+    padding: 0.9rem;
+  }
+
+  .question-card {
+    font-size: 0.95rem;
+    padding: 0.9rem;
+  }
+
+  .summary {
+    font-size: 0.95rem;
+  }
+
+  .back-link {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}

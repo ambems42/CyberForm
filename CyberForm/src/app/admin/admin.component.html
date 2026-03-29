@@ -1,0 +1,554 @@
+<!-- NOUVEAU TABLEAU DE BORD ADMIN -->
+<div class="dashboard admin-layout">
+  <!-- HEADER -->
+  <div class="admin-header">
+    <div>
+      <h2>{{ 'ADMIN.WELCOME' | translate:{ name: prenom } }}</h2>
+      <p class="admin-subtitle">
+        {{ 'ADMIN.SUBTITLE' | translate }}
+      </p>
+    </div>
+    <div class="admin-header-actions">
+      <button class="btn-primary" (click)="allerVersCreationUtilisateur()">
+        {{ 'ADMIN.CREATE_COLLABORATOR' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs PRINCIPAUX -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">{{ 'ADMIN.KPI_GLOBAL_SCORE' | translate }}</div>
+      <div class="kpi-value">
+        {{ score }}<span class="kpi-unit">/1000</span>
+      </div>
+      <div class="kpi-pill" [ngClass]="getScoreBadge(score)">
+        {{ getScoreLabelKey(score) | translate }}
+      </div>
+    </div>
+
+    <div class="kpi-card" *ngIf="chartOptions?.chart">
+      <div class="kpi-label">{{ 'ADMIN.KPI_ORG_RISK' | translate }}</div>
+      <div class="kpi-chart">
+        <apx-chart
+          [series]="chartOptions.series"
+          [chart]="chartOptions.chart"
+          [plotOptions]="chartOptions.plotOptions"
+          [labels]="chartOptions.labels"
+          [fill]="chartOptions.fill"
+          [stroke]="chartOptions.stroke">
+        </apx-chart>
+      </div>
+    </div>
+
+    <div class="kpi-card" *ngIf="chartRisque?.chart">
+      <div class="kpi-label">{{ 'ADMIN.KPI_USERS_AT_RISK' | translate }}</div>
+      <div class="kpi-chart">
+        <apx-chart
+          [series]="chartRisque.series"
+          [chart]="chartRisque.chart"
+          [plotOptions]="chartRisque.plotOptions"
+          [labels]="chartRisque.labels"
+          [fill]="chartRisque.fill"
+          [stroke]="chartRisque.stroke">
+        </apx-chart>
+      </div>
+    </div>
+
+    <div class="kpi-card" *ngIf="chartObjectifs?.chart">
+      <div class="kpi-label">{{ 'ADMIN.KPI_OBJECTIVES' | translate }}</div>
+      <div class="kpi-chart">
+        <apx-chart
+          [series]="chartObjectifs.series"
+          [chart]="chartObjectifs.chart"
+          [plotOptions]="chartObjectifs.plotOptions"
+          [labels]="chartObjectifs.labels"
+          [fill]="chartObjectifs.fill"
+          [stroke]="chartObjectifs.stroke">
+        </apx-chart>
+      </div>
+    </div>
+
+    <div class="kpi-card" *ngIf="chartFormations?.chart">
+      <div class="kpi-label">{{ 'ADMIN.KPI_TRAININGS_PLANNED' | translate }}</div>
+      <div class="kpi-chart">
+        <apx-chart
+          [series]="chartFormations.series"
+          [chart]="chartFormations.chart"
+          [plotOptions]="chartFormations.plotOptions"
+          [labels]="chartFormations.labels"
+          [fill]="chartFormations.fill"
+          [stroke]="chartFormations.stroke">
+        </apx-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENU PRINCIPAL : LISTE + COMPARAISON + STATS -->
+  <div class="admin-main">
+    <!-- COLONNE GAUCHE : UTILISATEURS -->
+    <section class="admin-panel users-panel">
+      <header class="panel-header">
+        <div>
+          <h3>{{ 'ADMIN.COLLABORATORS_TITLE' | translate }}</h3>
+          <p class="panel-subtitle">
+            {{ 'ADMIN.COLLABORATORS_SUBTITLE' | translate }}
+          </p>
+        </div>
+      </header>
+
+      <!-- Barre de recherche et filtres (logique déjà gérée en TS) -->
+      <div class="users-toolbar">
+        <input
+          class="search-bar"
+          type="text"
+          [(ngModel)]="searchTerm"
+          [placeholder]="'ADMIN.SEARCH_PLACEHOLDER' | translate"
+        />
+
+        <div class="filter-chips">
+          <button
+            type="button"
+            [class.active]="filterMode === 'all'"
+            (click)="filterMode = 'all'">
+            {{ 'ADMIN.FILTER_ALL' | translate }}
+          </button>
+          <button
+            type="button"
+            [class.active]="filterMode === 'risk'"
+            (click)="filterMode = 'risk'">
+            {{ 'ADMIN.FILTER_AT_RISK' | translate }}
+          </button>
+          <button
+            type="button"
+            [class.active]="filterMode === 'lateTraining'"
+            (click)="filterMode = 'lateTraining'">
+            {{ 'ADMIN.FILTER_LATE_TRAINING' | translate }}
+          </button>
+          <button
+            type="button"
+            [class.active]="filterMode === 'badProfile'"
+            (click)="filterMode = 'badProfile'">
+            {{ 'ADMIN.FILTER_BAD_PROFILE' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <!-- TABLEAU UTILISATEURS -->
+      <div class="table-wrapper" *ngIf="filteredUsers.length > 0; else noUsers">
+        <table class="risk-table">
+          <thead>
+            <tr>
+              <th>{{ 'ADMIN.TH_USER' | translate }}</th>
+              <th>{{ 'ADMIN.TH_JOB' | translate }}</th>
+              <th>{{ 'ADMIN.TH_RISK' | translate }}</th>
+              <th>{{ 'ADMIN.TH_OBJECTIVE' | translate }}</th>
+              <th>{{ 'ADMIN.TH_LAST_EVAL' | translate }}</th>
+              <th>{{ 'ADMIN.TH_NEXT_EVAL' | translate }}</th>
+              <th>{{ 'ADMIN.TH_LAST_TRAINING' | translate }}</th>
+              <th>{{ 'ADMIN.TH_NEXT_TRAINING' | translate }}</th>
+              <th>{{ 'ADMIN.TH_STATUS' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let u of filteredUsers"
+              (click)="viewDetails(u.basic_info?.userID)"
+              class="user-row">
+              <td [attr.data-label]="'ADMIN.TH_USER' | translate">
+                <div class="user-cell">
+                  <div class="user-avatar">
+                    {{ getUserInitial(u) }}
+                  </div>
+                  <div class="user-meta">
+                    <div class="user-name">
+                      {{ u.basic_info?.prenom }} {{ u.basic_info?.nom }}
+                    </div>
+                    <div class="user-id">
+                      {{ 'ADMIN.ID_PREFIX' | translate }} {{ u.basic_info?.userID }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <td [attr.data-label]="'ADMIN.TH_JOB' | translate">
+                {{ u.profil?.jobRole || ('ADMIN.NOT_PROVIDED' | translate) }}
+              </td>
+
+              <td [attr.data-label]="'ADMIN.TH_RISK' | translate">
+                <span [ngClass]="getRiskBadgeForUser(u)">
+                  {{ formatDisplayedRisk(u) }}
+                </span>
+              </td>
+
+              <td [attr.data-label]="'ADMIN.DATA_LABEL_OBJECTIVE' | translate">
+                <span [class]="u.objectifAtteint ? 'yes' : 'no'">
+                  {{ u.objectifAtteint ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) }}
+                </span>
+              </td>
+
+              <td [attr.data-label]="'ADMIN.TH_LAST_EVAL' | translate">
+                {{ u.lastEvaluationDate | date:'medium' }}
+              </td>
+              <td [attr.data-label]="'ADMIN.TH_NEXT_EVAL' | translate">
+                {{ u.nextEvaluationDate | date:'medium' }}
+              </td>
+              <td [attr.data-label]="'ADMIN.TH_LAST_TRAINING' | translate">
+                {{ u.lastTrainingDate | date:'medium' }}
+              </td>
+              <td [attr.data-label]="'ADMIN.TH_NEXT_TRAINING' | translate">
+                {{ u.nextTrainingDate | date:'medium' }}
+              </td>
+              <td [attr.data-label]="'ADMIN.TH_STATUS' | translate">
+                <span [ngClass]="u.statutColor">{{ u.statutLabel }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noUsers>
+        <p class="empty-state">{{ 'ADMIN.EMPTY_FILTER' | translate }}</p>
+      </ng-template>
+    </section>
+
+    <!-- COLONNE DROITE : COMPARAISONS + STATISTIQUES -->
+    <section class="admin-panel side-panel">
+      <div class="side-tabs">
+        <button
+          type="button"
+          [class.active]="activeSection === 'dashboard'"
+          (click)="activeSection = 'dashboard'">
+          {{ 'ADMIN.TAB_SCORE_COMPARISON' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="activeSection === 'orgSettings'"
+          (click)="activeSection = 'orgSettings'">
+          {{ 'ADMIN.TAB_ORG_SETTINGS' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="activeSection === 'stats'"
+          (click)="activeSection = 'stats'">
+          {{ 'ADMIN.TAB_MONTHLY_STATS' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.active]="activeSection === 'quizQuality'"
+          (click)="selectQuizQualityTab()">
+          {{ 'ADMIN.TAB_QUIZ_METRICS' | translate }}
+        </button>
+      </div>
+
+      <div class="side-content" *ngIf="activeSection === 'dashboard'">
+        <h3>{{ 'ADMIN.COMPARISON_TITLE' | translate }}</h3>
+        <p class="panel-subtitle">
+          {{ 'ADMIN.COMPARISON_SUB' | translate }}
+        </p>
+        <app-comparaisonscore></app-comparaisonscore>
+      </div>
+
+      <div class="side-content" *ngIf="activeSection === 'orgSettings'">
+        <div class="org-settings-below-comparison org-settings-admin org-settings-tab-only">
+          <h3 class="org-settings-section-title">{{ 'ADMIN.TAB_ORG_SETTINGS' | translate }}</h3>
+          <p class="panel-subtitle">{{ 'ADMIN.ORG_SETTINGS_SUB' | translate }}</p>
+
+          <p *ngIf="orgSettingsLoading" class="quiz-quality-loading">{{ 'ADMIN.LOADING' | translate }}</p>
+
+          <div class="org-settings-form" *ngIf="!orgSettingsLoading">
+            <!-- 1. Admin remplit d’abord : techniques critiques + plafond -->
+            <section class="org-settings-card" aria-labelledby="org-card-critical-title">
+              <h4 id="org-card-critical-title" class="org-settings-card-title">
+                {{ 'ADMIN.ORG_CARD_CRITICAL_TITLE' | translate }}
+              </h4>
+              <p class="org-settings-card-lead">{{ 'ADMIN.ORG_CRITICAL_FILL_LEAD' | translate }}</p>
+              <div class="org-critical-fields">
+                <span class="org-settings-label-block">{{ 'ADMIN.ORG_CRITICAL_MODE' | translate }}</span>
+                <div class="org-settings-radio-group">
+                  <label class="org-settings-radio">
+                    <input type="radio" name="critMode" [(ngModel)]="criticalTechniqueMode" value="default" />
+                    {{ 'ADMIN.ORG_CRITICAL_DEFAULT' | translate }}
+                  </label>
+                  <label class="org-settings-radio">
+                    <input type="radio" name="critMode" [(ngModel)]="criticalTechniqueMode" value="custom" />
+                    {{ 'ADMIN.ORG_CRITICAL_CUSTOM' | translate }}
+                  </label>
+                  <label class="org-settings-radio">
+                    <input type="radio" name="critMode" [(ngModel)]="criticalTechniqueMode" value="disabled" />
+                    {{ 'ADMIN.ORG_CRITICAL_DISABLED' | translate }}
+                  </label>
+                </div>
+                <textarea
+                  *ngIf="criticalTechniqueMode === 'custom'"
+                  class="org-settings-textarea org-critical-ids-textarea"
+                  rows="6"
+                  [(ngModel)]="criticalTechniqueIdsText"
+                  [placeholder]="'ADMIN.ORG_CRITICAL_PLACEHOLDER' | translate"
+                ></textarea>
+                <div class="org-settings-fields-grid org-critical-vuln-grid">
+                  <label class="org-settings-field">
+                    <span>{{ 'ADMIN.ORG_CRITICAL_VULN' | translate }}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      [(ngModel)]="criticalVulnThresholdPct"
+                    />
+                  </label>
+                </div>
+              </div>
+              <details class="org-settings-details">
+                <summary>{{ 'ADMIN.ORG_CRITICAL_HELP_SUMMARY' | translate }}</summary>
+                <p class="org-settings-hint org-critical-intro">{{ 'ADMIN.ORG_CRITICAL_BLOCK_INTRO' | translate }}</p>
+                <ul class="org-settings-hint-list">
+                  <li>{{ 'ADMIN.ORG_CRITICAL_BLOCK_L1' | translate }}</li>
+                  <li>{{ 'ADMIN.ORG_CRITICAL_BLOCK_L2' | translate }}</li>
+                  <li>{{ 'ADMIN.ORG_CRITICAL_BLOCK_L3' | translate }}</li>
+                  <li>{{ 'ADMIN.ORG_CRITICAL_BLOCK_L4' | translate }}</li>
+                </ul>
+                <p class="org-settings-hint org-hint-tight">{{ 'ADMIN.ORG_CRITICAL_VULN_AFTER_LIST' | translate }}</p>
+              </details>
+            </section>
+
+            <!-- 2. Objectif global & seuils appris -->
+            <section class="org-settings-card org-settings-card-global" aria-labelledby="org-card-global-title">
+              <h4 id="org-card-global-title" class="org-settings-card-title">
+                {{ 'ADMIN.ORG_CARD_GLOBAL_TITLE' | translate }}
+              </h4>
+              <div class="org-settings-fields-grid">
+                <label class="org-settings-field">
+                  <span>{{ 'ADMIN.ORG_POLICY_THRESHOLD' | translate }}</span>
+                  <input type="number" min="0" max="100" step="0.5" [(ngModel)]="policyThresholdPct" />
+                </label>
+                <label class="org-settings-field">
+                  <span>{{ 'ADMIN.ORG_K_THRESHOLD' | translate }}</span>
+                  <input type="number" min="0.5" max="1.5" step="0.01" [(ngModel)]="kThreshold" />
+                </label>
+                <label class="org-settings-field">
+                  <span>{{ 'ADMIN.ORG_LEARNED_WINDOW' | translate }}</span>
+                  <input type="number" min="1" max="200" step="1" [(ngModel)]="learnedHistoryWindow" />
+                </label>
+                <label class="org-settings-field">
+                  <span>{{ 'ADMIN.ORG_LEARNED_MIN' | translate }}</span>
+                  <input type="number" min="0" max="100" step="0.5" [(ngModel)]="learnedMinPct" />
+                </label>
+                <label class="org-settings-field">
+                  <span>{{ 'ADMIN.ORG_LEARNED_MAX' | translate }}</span>
+                  <input type="number" min="0" max="100" step="0.5" [(ngModel)]="learnedMaxPct" />
+                </label>
+              </div>
+              <p class="org-settings-hint org-settings-pass-hint-inline">{{ 'ADMIN.ORG_POLICY_PASS_EXPLAIN' | translate }}</p>
+            </section>
+
+            <!-- 3. Catalogue MITRE -->
+            <section class="org-settings-card org-settings-card-per-tech" aria-labelledby="org-card-per-tech-title">
+              <h4 id="org-card-per-tech-title" class="org-settings-card-title">
+                {{ 'ADMIN.ORG_CARD_PER_TECH_TITLE' | translate }}
+              </h4>
+            <div class="org-settings-field org-per-tech">
+              <p class="org-settings-hint">{{ 'ADMIN.ORG_PER_TECH_PURPOSE' | translate }}</p>
+              <p class="org-settings-hint">{{ 'ADMIN.ORG_PER_TECH_CATALOG_HINT' | translate }}</p>
+
+              <p *ngIf="!orgSettingsLoading && !mitreCatalogRows.length" class="org-settings-hint org-mitre-catalog-empty">
+                {{ 'ADMIN.MITRE_CATALOG_EMPTY' | translate }}
+              </p>
+
+              <ng-container *ngIf="mitreCatalogRows.length">
+                <label class="quiz-quality-field mitre-catalog-filter">
+                  <span>{{ 'ADMIN.MITRE_CATALOG_FILTER' | translate }}</span>
+                  <input
+                    type="search"
+                    [(ngModel)]="mitreCatalogFilter"
+                    [placeholder]="'ADMIN.MITRE_CATALOG_FILTER_PH' | translate"
+                    autocomplete="off"
+                  />
+                </label>
+                <p class="org-settings-hint mitre-filter-help">{{ 'ADMIN.MITRE_CATALOG_FILTER_HELP' | translate }}</p>
+                <p class="org-settings-hint mitre-count">
+                  {{ 'ADMIN.MITRE_CATALOG_COUNT' | translate:{ n: filteredMitreCatalogRows.length, t: mitreCatalogRows.length } }}
+                </p>
+                <div class="mitre-catalog-scroll">
+                  <table class="risk-table org-mitre-catalog-table">
+                    <thead>
+                      <tr>
+                        <th>{{ 'ADMIN.ORG_PER_TECH_ID' | translate }}</th>
+                        <th>{{ 'ADMIN.MITRE_CATALOG_NAME' | translate }}</th>
+                        <th>{{ 'ADMIN.ORG_PER_TECH_MAX_VULN' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of filteredMitreCatalogRows">
+                        <td class="mono">{{ row.id }}</td>
+                        <td class="mitre-name-cell">{{ row.name }}</td>
+                        <td>
+                          <input
+                            type="number"
+                            class="mitre-threshold-input"
+                            min="0"
+                            max="100"
+                            step="0.5"
+                            [(ngModel)]="row.thresholdPct"
+                            [placeholder]="'—'"
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-container>
+
+                <div class="org-settings-field org-per-tech-custom">
+                  <span class="org-settings-label-block">{{ 'ADMIN.MITRE_CUSTOM_TITLE' | translate }}</span>
+                  <p class="org-settings-hint">{{ 'ADMIN.MITRE_CUSTOM_HINT' | translate }}</p>
+                  <div class="org-per-tech-table-wrap" *ngIf="customPerTechniqueRows.length">
+                    <table class="risk-table org-per-tech-table">
+                      <thead>
+                        <tr>
+                          <th>{{ 'ADMIN.ORG_PER_TECH_ID' | translate }}</th>
+                          <th>{{ 'ADMIN.ORG_PER_TECH_MAX_VULN' | translate }}</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let row of customPerTechniqueRows; let i = index">
+                          <td>
+                            <input
+                              type="text"
+                              class="org-per-tech-input"
+                              [(ngModel)]="row.techniqueId"
+                              [placeholder]="'T1566'"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="0.5"
+                              [(ngModel)]="row.thresholdPct"
+                            />
+                          </td>
+                          <td>
+                            <button type="button" class="btn-secondary btn-icon" (click)="removeCustomPerTechniqueRow(i)">
+                              {{ 'ADMIN.ORG_REMOVE_ROW' | translate }}
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <button type="button" class="btn-secondary org-add-row" (click)="addCustomPerTechniqueRow()">
+                    {{ 'ADMIN.MITRE_CUSTOM_ADD' | translate }}
+                  </button>
+                </div>
+            </div>
+            </section>
+
+            <div class="org-settings-actions">
+              <button
+                type="button"
+                class="btn-primary"
+                (click)="saveOrganizationSettings()"
+                [disabled]="orgSettingsSaving">
+                {{ 'ADMIN.ORG_SAVE' | translate }}
+              </button>
+              <div
+                #orgSaveFeedback
+                class="org-save-feedback"
+                *ngIf="orgSettingsSaved || orgSettingsError"
+                role="status"
+                aria-live="polite">
+                <p *ngIf="orgSettingsSaved" class="org-settings-saved org-settings-saved-inline">
+                  {{ 'ADMIN.ORG_SAVED' | translate }}
+                </p>
+                <p *ngIf="orgSettingsError" class="quiz-quality-error">{{ orgSettingsError }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-content" *ngIf="activeSection === 'stats'">
+        <h3>{{ 'ADMIN.STATS_TITLE' | translate }}</h3>
+        <p class="panel-subtitle">
+          {{ 'ADMIN.STATS_SUB' | translate }}
+        </p>
+        <app-statistics-mois></app-statistics-mois>
+      </div>
+
+      <div class="side-content quiz-quality-admin" *ngIf="activeSection === 'quizQuality'">
+        <h3>{{ 'ADMIN.QUIZ_QUALITY_TITLE' | translate }}</h3>
+        <div class="quiz-quality-toolbar">
+          <label class="quiz-quality-field">
+            <span>{{ 'ADMIN.QUIZ_USER_LABEL' | translate }} </span>
+            <input
+              type="text"
+              [(ngModel)]="qualityFilterUserId"
+              [placeholder]="'ADMIN.QUIZ_USER_PLACEHOLDER' | translate"
+            />
+          </label>
+          <label class="quiz-quality-field">
+            <span>{{ 'ADMIN.QUIZ_LIMIT_LABEL' | translate }}</span>
+            <input
+              type="number"
+              min="1"
+              max="500"
+              [(ngModel)]="qualityLimit"
+            />
+          </label>
+          <button type="button" class="btn-secondary" (click)="loadQuizQualityMetrics()" [disabled]="quizQualityLoading">
+            {{ 'ADMIN.REFRESH' | translate }}
+          </button>
+          <button type="button" class="btn-primary" (click)="downloadQualityCsv()">
+            {{ 'ADMIN.DOWNLOAD_CSV' | translate }}
+          </button>
+        </div>
+
+        <p *ngIf="quizQualityError" class="quiz-quality-error">{{ quizQualityError }}</p>
+        <p *ngIf="quizQualityLoading" class="quiz-quality-loading">{{ 'ADMIN.LOADING' | translate }}</p>
+
+        <div class="table-wrapper" *ngIf="!quizQualityLoading && quizQualityItems.length > 0">
+          <table class="risk-table quiz-quality-table">
+            <thead>
+              <tr>
+                <th>{{ 'ADMIN.TH_DATE' | translate }}</th>
+                <th>{{ 'ADMIN.TH_USER' | translate }}</th>
+                <th>{{ 'ADMIN.TH_TYPE' | translate }}</th>
+                <th>{{ 'ADMIN.TH_QUALITY_SCORE' | translate }}</th>
+                <th>{{ 'ADMIN.TH_THRESHOLD' | translate }}</th>
+                <th>{{ 'ADMIN.TH_BELOW_THRESHOLD' | translate }}</th>
+                <th>{{ 'ADMIN.TH_BLOOM' | translate }}</th>
+                <th>{{ 'ADMIN.TH_ATTEMPTS' | translate }}</th>
+                <th>{{ 'ADMIN.TH_QUIZ_ID' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of quizQualityItems">
+                <td>{{ row.date | date:'short' }}</td>
+                <td class="mono">{{ row.userID }}</td>
+                <td>{{ row.quiz_type }}</td>
+                <td>{{ qmNum(row, 'quality_score') | number:'1.0-1' }}</td>
+                <td>{{ qmNum(row, 'quality_threshold') | number:'1.0-0' }}</td>
+                <td>
+                  <span [class.yes]="qmBool(row, 'quality_below_threshold') === true"
+                        [class.no]="qmBool(row, 'quality_below_threshold') === false">
+                    {{ qmBool(row, 'quality_below_threshold') === true ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) }}
+                  </span>
+                </td>
+                <td>{{ qmNum(row, 'bloom_coverage') ?? '—' }} / 4</td>
+                <td>{{ qmNum(row, 'quality_attempts') ?? '—' }}</td>
+                <td class="mono quiz-id-cell">{{ row.quiz_id }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p *ngIf="!quizQualityLoading && !quizQualityError && quizQualityItems.length === 0" class="empty-state">
+          {{ 'ADMIN.EMPTY_METRICS' | translate }}
+        </p>
+      </div>
+    </section>
+  </div>
+</div>

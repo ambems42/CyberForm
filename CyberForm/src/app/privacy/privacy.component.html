@@ -1,0 +1,30 @@
+<div class="page">
+  <h2>{{ 'PRIVACY.TITLE' | translate }}</h2>
+
+  <p [innerHTML]="'PRIVACY.INTRO' | translate | safeHtml"></p>
+
+  <h3>{{ 'PRIVACY.H_COLLECTED' | translate }}</h3>
+  <ul>
+    <li [innerHTML]="'PRIVACY.LI_PROFILE' | translate | safeHtml"></li>
+    <li [innerHTML]="'PRIVACY.LI_QUIZ' | translate | safeHtml"></li>
+    <li [innerHTML]="'PRIVACY.LI_TRAINING' | translate | safeHtml"></li>
+  </ul>
+
+  <h3>{{ 'PRIVACY.H_PURPOSES' | translate }}</h3>
+  <ul>
+    <li>{{ 'PRIVACY.PU1' | translate }}</li>
+    <li>{{ 'PRIVACY.PU2' | translate }}</li>
+    <li>{{ 'PRIVACY.PU3' | translate }}</li>
+  </ul>
+
+  <h3>{{ 'PRIVACY.H_SHARE' | translate }}</h3>
+  <p>{{ 'PRIVACY.P_SHARE' | translate }}</p>
+
+  <h3>{{ 'PRIVACY.H_RETENTION' | translate }}</h3>
+  <p>{{ 'PRIVACY.P_RETENTION' | translate }}</p>
+
+  <h3>{{ 'PRIVACY.H_RIGHTS' | translate }}</h3>
+  <p [innerHTML]="'PRIVACY.P_RIGHTS' | translate | safeHtml"></p>
+
+  <a routerLink="/" class="back-button">{{ 'COMMON.BACK_HOME' | translate }}</a>
+</div>

@@ -1,0 +1,61 @@
+/* Conteneur global centré */
+:host {
+  display: block;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Filtres */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.filters label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.filters select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Graphique centré et responsive */
+apx-chart {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Message "Aucune donnée" centré */
+p {
+  text-align: center;
+  font-weight: bold;
+  color: #888;
+  margin-top: 2rem;
+}
+
+select, button {
+  padding: 0.5rem;
+  font-size: 14px;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters select {
+    width: 100%;
+  }
+}

@@ -1,0 +1,136 @@
+<div class="home-container">
+
+  <section class="hero-section">
+    <div class="hero-text">
+      <h1>{{ 'HOME.HERO_LINE1' | translate }} <span>CyberForm</span></h1>
+
+      <p>{{ 'HOME.HERO_P' | translate }}</p>
+
+      <div class="hero-buttons">
+        <a routerLink="/login" class="btn primary">{{ 'HOME.BTN_START' | translate }}</a>
+        <a routerLink="/about" class="btn secondary">{{ 'HOME.BTN_DISCOVER' | translate }}</a>
+      </div>
+    </div>
+
+    <div class="hero-video">
+      <iframe
+        width="100%"
+        height="315"
+        src="https://www.youtube-nocookie.com/embed/pYis9wHCwJA"
+        [attr.title]="'HOME.VIDEO_TITLE' | translate"
+        frameborder="0"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <h2>{{ 'HOME.FEATURES_TITLE' | translate }}</h2>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <h3>{{ 'HOME.F1_T' | translate }}</h3>
+        <p>{{ 'HOME.F1_P' | translate }}</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>{{ 'HOME.F2_T' | translate }}</h3>
+        <p>{{ 'HOME.F2_P' | translate }}</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>{{ 'HOME.F3_T' | translate }}</h3>
+        <p>{{ 'HOME.F3_P' | translate }}</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>{{ 'HOME.F4_T' | translate }}</h3>
+        <p>{{ 'HOME.F4_P' | translate }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="highlight-section">
+    <div class="highlight-card">
+      <div class="highlight-left">
+        <h2>{{ 'HOME.HIGHLIGHT_T' | translate }}</h2>
+        <p>{{ 'HOME.HIGHLIGHT_P' | translate }}</p>
+      </div>
+
+      <div class="highlight-right">
+        <div class="mini-box">
+          <h4>{{ 'HOME.MINI_PRE_T' | translate }}</h4>
+          <p>{{ 'HOME.MINI_PRE_P' | translate }}</p>
+        </div>
+        <div class="mini-box">
+          <h4>{{ 'HOME.MINI_FORM_T' | translate }}</h4>
+          <p>{{ 'HOME.MINI_FORM_P' | translate }}</p>
+        </div>
+        <div class="mini-box">
+          <h4>{{ 'HOME.MINI_POST_T' | translate }}</h4>
+          <p>{{ 'HOME.MINI_POST_P' | translate }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+   <section class="trust-section">
+    <div class="trust-box">
+      <span>{{ 'HOME.TRUST_1' | translate }}</span>
+      <span>{{ 'HOME.TRUST_2' | translate }}</span>
+      <span>{{ 'HOME.TRUST_3' | translate }}</span>
+      <span>{{ 'HOME.TRUST_4' | translate }}</span>
+      <span>{{ 'HOME.TRUST_5' | translate }}</span>
+    </div>
+  </section>
+
+
+  <section class="why-section">
+    <h2>{{ 'HOME.WHY_TITLE' | translate }}</h2>
+    <div class="why-grid">
+      <div class="why-card">
+        <h3>{{ 'HOME.WHY1_T' | translate }}</h3>
+        <p>{{ 'HOME.WHY1_P' | translate }}</p>
+      </div>
+
+      <div class="why-card">
+        <h3>{{ 'HOME.WHY2_T' | translate }}</h3>
+        <p>{{ 'HOME.WHY2_P' | translate }}</p>
+      </div>
+
+      <div class="why-card">
+        <h3>{{ 'HOME.WHY3_T' | translate }}</h3>
+        <p>{{ 'HOME.WHY3_P' | translate }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section">
+    <h2>{{ 'HOME.TESTI_TITLE' | translate }}</h2>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p>{{ 'HOME.T1_Q' | translate }}</p>
+        <span>{{ 'HOME.T1_A' | translate }}</span>
+      </div>
+
+      <div class="testimonial-card">
+        <p>{{ 'HOME.T2_Q' | translate }}</p>
+        <span>{{ 'HOME.T2_A' | translate }}</span>
+      </div>
+
+      <div class="testimonial-card">
+        <p>{{ 'HOME.T3_Q' | translate }}</p>
+        <span>{{ 'HOME.T3_A' | translate }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2>{{ 'HOME.CTA_T' | translate }}</h2>
+    <p>{{ 'HOME.CTA_P' | translate }}</p>
+    <a routerLink="/login" class="btn primary large">{{ 'HOME.CTA_BTN' | translate }}</a>
+  </section>
+</div>

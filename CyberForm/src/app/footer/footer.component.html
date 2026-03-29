@@ -1,0 +1,18 @@
+<footer class="footer">
+  <div class="footer-left">
+    <p>{{ 'FOOTER.COPYRIGHT' | translate }}</p>
+  </div>
+
+  <div class="footer-center">
+    <nav>
+      <a routerLink="/security">{{ 'FOOTER.SECURITY' | translate }}</a>
+      <a routerLink="/privacy">{{ 'FOOTER.PRIVACY' | translate }}</a>
+    </nav>
+  </div>
+
+  <div class="footer-right">
+    <a [href]="contactMailtoHref" aria-label="Email">
+      <i class="fas fa-envelope"></i> {{ 'FOOTER.CONTACT' | translate }}
+    </a>
+  </div>
+</footer>

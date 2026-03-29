@@ -1,0 +1,236 @@
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f6fc;
+}
+
+.left-section {
+  flex: 1;
+  background: linear-gradient(to bottom right, #003366, #79828c);
+  color: white;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.left-section img {
+  max-width: 80%;
+  margin-top: 2rem;
+  height: auto;
+  margin: 20px auto;
+  display: block;
+}
+
+.left-section-sub {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.right-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+.login-container {
+  background-color: white;
+  padding: 5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  width: auto;
+  max-width: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 2.50rem;
+}
+
+.login-container p {
+  text-align: center;
+  color: #444;
+  font-size: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.login-container form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 42px;
+}
+
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-110%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 0;
+}
+
+
+.toggle-password:hover {
+  background-color: transparent;
+}
+
+.eye-icon {
+  position: relative;
+  width: 16px;
+  height: 10px;
+  border-radius: 10px / 6px;
+  border: 2px solid #003366;
+  box-sizing: border-box;
+}
+
+.eye-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background-color: #003366;
+}
+
+.eye-closed::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 20px;
+  height: 14px;
+  border-top: 2px solid #003366;
+  transform: rotate(-30deg);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.login-container form label {
+  text-align: left !important;
+  display: block;
+}
+
+
+.login-container img {
+  display: block;
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* ombre légère */
+  transition: transform 0.3s ease;
+}
+
+.login-container img:hover {
+  transform: scale(1.05); /* petit zoom au survol */
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #003366;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button[disabled] {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.remenber-forget {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.remenber-forget a {
+  color: #2f80ed;
+  text-decoration: none;
+}
+
+.remenber-forget a:hover {
+  text-decoration: underline;
+}
+
+.security-note {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.error {
+  color: #dc3545; /* Rouge alerte */
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background-color: rgba(220, 53, 69, 0.1); /* rouge translucide */
+  border: 1px solid rgba(220, 53, 69, 0.4); /* bord rouge atténué */
+  border-radius: 8px;
+}
+
+
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .left-section {
+    display: none;
+  }
+
+  .right-section {
+    width: 100%;
+    justify-content: center;
+    padding: 2rem;
+  }
+}

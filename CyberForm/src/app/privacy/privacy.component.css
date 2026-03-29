@@ -1,0 +1,102 @@
+.page {
+  max-width: 960px;
+  margin: 2.5rem auto;
+  padding: 2.5rem 2rem;
+  background-color: #f5f7fb;
+  border-radius: 12px;
+  font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  color: #1f2933;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.page h2 {
+  color: #0b3b75;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #16a34a;
+  letter-spacing: 0.02em;
+}
+
+.page h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #0b3b75;
+  font-size: 1.15rem;
+}
+
+.page p {
+  font-size: 1.02rem;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.page ul {
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.page ul li {
+  margin-bottom: 0.5rem;
+}
+
+.page a {
+  color: #16a34a;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.page a:hover {
+  text-decoration: underline;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(135deg, #0b3b75, #16a34a);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(22, 163, 74, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.back-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(22, 163, 74, 0.45);
+  filter: brightness(1.03);
+}
+
+.back-button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.35);
+}
+
+@media (max-width: 768px) {
+  .page {
+    margin: 1.5rem 1rem;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .page h2 {
+    font-size: 1.6rem;
+  }
+
+  .page p {
+    font-size: 0.98rem;
+  }
+
+  .back-button {
+    width: 100%;
+  }
+}

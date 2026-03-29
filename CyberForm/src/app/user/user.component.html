@@ -1,0 +1,280 @@
+<div class="dashboard-container">
+
+  <!-- Menu à gauche -->
+  <aside class="sidebar">
+    <div class="user-header">
+      <div class="user-avatar">
+        {{ (prenom || nom || '?') | slice:0:1 | uppercase }}
+      </div>
+      <div class="user-header-text">
+        <h2>
+          {{ 'USER.WELCOME' | translate:{ firstName: prenom, lastName: nom } }}
+        </h2>
+        <p class="user-subtitle">
+          {{ 'USER.PROFILE.JOB_ROLE' | translate }} :
+          <span>{{ user?.jobRole || ('COMMON.UNDEFINED' | translate) }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Bannière workflow strict -->
+    <div *ngIf="postQuizRequired" class="post-quiz-banner">
+      <div class="post-quiz-banner__title">{{ 'USER.EVAL.POST_BANNER_TITLE' | translate }}</div>
+      <div class="post-quiz-banner__text">
+        {{ 'USER.EVAL.POST_BANNER_TEXT' | translate }}
+      </div>
+      <div class="post-quiz-banner__actions">
+        <button type="button" (click)="setSection('formation')" class="banner-btn secondary">
+          {{ 'USER.EVAL.BTN_SEE_FORMATION' | translate }}
+        </button>
+        <button type="button" (click)="setSection('quiz')" class="banner-btn">
+          {{ 'USER.EVAL.BTN_START_POST_QUIZ' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div class="navigation-buttons">
+      <button (click)="setSection('user')" [class.active]="activeSection === 'user'">
+        {{ 'USER.MENU.USER_SPACE' | translate }}
+      </button>
+      <button (click)="setSection('quiz')" [class.active]="activeSection === 'quiz'">
+        {{ 'USER.MENU.RISK_ANALYSIS' | translate }}
+        <span *ngIf="quizType === 'post'" class="badge-post">{{ 'USER.EVAL.BADGE_POST_QUIZ' | translate }}</span>
+      </button>
+      <button (click)="setSection('formation')" [class.active]="activeSection === 'formation'">
+        {{ 'USER.MENU.TRAINING' | translate }}
+      </button>
+      <button
+        (click)="setSection('editprofile')"
+        [disabled]="postQuizRequired"
+        [class.active]="activeSection === 'editprofile'">
+        {{ 'USER.MENU.EDIT_PROFILE' | translate }}
+      </button>
+    </div>
+  </aside>
+
+  <!-- Contenu principal à droite -->
+  <main class="main-content">
+
+    <!-- Notifications d'évaluation -->
+    <div *ngIf="evaluationToday" class="eval-banner today">
+      <div class="eval-banner__title">Évaluation à réaliser aujourd'hui</div>
+      <div class="eval-banner__text">
+        Une évaluation est planifiée pour aujourd'hui. Merci de compléter le test de cybersécurité.
+      </div>
+      <p *ngIf="user?.nextEvaluationDate" class="eval-banner__date">
+        <strong>Date du test :</strong>
+        {{ user.nextEvaluationDate | date:'medium' }}
+      </p>
+      <div class="eval-banner__actions">
+        <button type="button" (click)="setSection('quiz')" class="eval-btn">
+          Faire l'évaluation
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!evaluationToday && evaluationSoon" class="eval-banner soon">
+      <div class="eval-banner__title">Évaluation à venir</div>
+      <div class="eval-banner__text">
+        Votre prochaine évaluation est prévue dans
+        <strong>{{ evaluationDaysLeft }}</strong>
+        jour{{ evaluationDaysLeft === 1 ? '' : 's' }}. Pensez à vous préparer.
+      </div>
+      <p *ngIf="user?.nextEvaluationDate" class="eval-banner__date">
+        <strong>Date du test :</strong>
+        {{ user.nextEvaluationDate | date:'medium' }}
+      </p>
+      <div class="eval-banner__actions">
+        <button type="button" (click)="goToEvaluationDates()" class="eval-btn secondary">
+          Voir les dates
+        </button>
+        <button type="button" (click)="setSection('quiz')" class="eval-btn">
+          Accéder au test
+        </button>
+      </div>
+    </div>
+
+    <!-- Section Mon espace -->
+    <ng-container *ngIf="activeSection === 'user'">
+      <div class="profile-box" *ngIf="user">
+        <h3>{{ 'USER.PROFILE.TITLE' | translate }}</h3>
+        <p>
+          <strong>{{ 'USER.PROFILE.LAST_NAME' | translate }} :</strong>
+          {{ nom }}
+        </p>
+        <p>
+          <strong>{{ 'USER.PROFILE.FIRST_NAME' | translate }} :</strong>
+          {{ prenom }}
+        </p>
+        <p>
+          <strong>{{ 'USER.PROFILE.JOB_ROLE' | translate }} :</strong>
+          {{ user?.jobRole || ('COMMON.UNDEFINED' | translate) }}
+        </p>
+
+        <p><strong>{{ 'USER.PROFILE.QUALIFICATIONS' | translate }} :</strong></p>
+        <ul>
+          <li *ngFor="let qualif of user?.qualifications">{{ qualif }}</li>
+        </ul>
+
+        <p><strong>{{ 'USER.PROFILE.RESPONSIBILITIES' | translate }} :</strong></p>
+        <ul>
+          <li *ngFor="let resp of user?.responsibilities">{{ resp }}</li>
+        </ul>
+
+        <p><strong>{{ 'USER.PROFILE.ASSETS' | translate }} :</strong></p>
+        <ul>
+          <li *ngFor="let asset of assetsDetails">
+            <strong>{{ asset.name }}</strong><br />
+            <small>{{ asset.description }}</small>
+            <div class="cia-scores">
+              <p>
+                <strong>{{ 'USER.PROFILE.CONFIDENTIALITY' | translate }} :</strong>
+                {{ asset.classification['confidentialité'] }}
+              </p>
+              <p>
+                <strong>{{ 'USER.PROFILE.INTEGRITY' | translate }} :</strong>
+                {{ asset.classification['intégrité'] }}
+              </p>
+              <p>
+                <strong>{{ 'USER.PROFILE.AVAILABILITY' | translate }} :</strong>
+                {{ asset.classification['disponibilité'] }}
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Résultat global utilisateur -->
+      <div class="history-box" *ngIf="user">
+        <h3>{{ 'USER.SUMMARY.TITLE' | translate }}</h3>
+
+        <p>
+          <strong>{{ 'USER.SUMMARY.LAST_QUIZ_DATE' | translate }} :</strong>
+          {{
+            user.lastQuizDate
+              ? (user.lastQuizDate | date:'medium')
+              : ('COMMON.NOT_AVAILABLE' | translate)
+          }}
+        </p>
+
+        <p>
+          <strong>{{ 'USER.SUMMARY.LAST_QUIZ_TYPE' | translate }} :</strong>
+          {{ user?.lastQuizType }}
+        </p>
+
+        <p>
+          <strong>{{ 'USER.SUMMARY.LAST_SCORE' | translate }} :</strong>
+          {{ user?.lastUserScore }}/{{ user?.lastTotalQuestions }}
+        </p>
+
+        <p>
+          <strong>{{ 'USER.SUMMARY.VULNERABILITY_SCORE' | translate }} :</strong>
+          {{ user.vulnerability_score }}%
+        </p>
+        
+        <p>
+          <strong>{{ 'USER.SUMMARY.OBJECTIVE_REACHED' | translate }} :</strong>
+          <span [ngClass]="user.objectifAtteint ? 'text-success' : 'text-danger'">
+            {{
+              user.objectifAtteint
+                ? ('COMMON.YES' | translate)
+                : ('COMMON.NO' | translate)
+            }}
+          </span>
+        </p>
+      </div>
+
+      <!-- Suivi des dates (cible du bouton « Voir les dates » sur la bannière d'évaluation) -->
+      <div class="calendar-box" *ngIf="user" id="user-calendar-dates">
+        <h3>{{ 'USER.CALENDAR.TITLE' | translate }}</h3>
+
+        <p>
+          <strong>{{ 'USER.CALENDAR.LAST_EVAL' | translate }} :</strong>
+          {{
+            user.lastEvaluationDate
+              ? (user.lastEvaluationDate | date:'medium')
+              : ('COMMON.NOT_AVAILABLE' | translate)
+          }}
+        </p>
+
+        <p>
+          <strong>{{ 'USER.CALENDAR.NEXT_EVAL' | translate }} :</strong>
+          {{
+            user.nextEvaluationDate
+              ? (user.nextEvaluationDate | date:'medium')
+              : ('COMMON.NOT_AVAILABLE' | translate)
+          }}
+        </p>
+
+        <p>
+          <strong>{{ 'USER.CALENDAR.LAST_TRAINING' | translate }} :</strong>
+          {{
+            user.lastTrainingDate
+              ? (user.lastTrainingDate | date:'medium')
+              : ('COMMON.NOT_AVAILABLE' | translate)
+          }}
+        </p>
+
+        <p>
+          <strong>{{ 'USER.CALENDAR.NEXT_TRAINING' | translate }} :</strong>
+          {{
+            user.nextTrainingDate
+              ? (user.nextTrainingDate | date:'medium')
+              : ('COMMON.NOT_AVAILABLE' | translate)
+          }}
+        </p>
+      </div>
+
+      <!-- Historique des quiz -->
+      <section *ngIf="historique.length > 0" class="history-box">
+        <div class="filter-buttons">
+          <button (click)="selectedQuizType = 'pre'; filterLatestQuizByType()">
+            {{ 'USER.HISTORY.SEE_LAST_PRE' | translate }}
+          </button>
+
+          <button (click)="selectedQuizType = 'post'; filterLatestQuizByType()">
+            {{ 'USER.HISTORY.SEE_LAST_POST' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="latestQuiz" class="latest-quiz-box">
+          <h4>
+            {{
+              (selectedQuizType === 'pre'
+                ? 'USER.HISTORY.LAST_PRE'
+                : 'USER.HISTORY.LAST_POST') | translate
+            }}
+          </h4>
+          <p>
+            <strong>{{ 'USER.HISTORY.DATE' | translate }} :</strong>
+            {{ latestQuiz.date | date:'short' }}
+          </p>
+          
+          <p>
+          <strong>{{ 'USER.HISTORY.RISK' | translate }} :</strong>
+          {{ latestQuiz?.normalized_risk_score ?? 0 }}%
+          </p>
+          <button (click)="revoirQuiz(latestQuiz)">
+            {{ 'USER.HISTORY.REVIEW' | translate }}
+          </button>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- Section Quiz -->
+    <ng-container *ngIf="activeSection === 'quiz'">
+      <app-quiz></app-quiz>
+    </ng-container>
+
+    <!-- Section Formation -->
+    <ng-container *ngIf="activeSection === 'formation'">
+      <app-formation></app-formation>
+    </ng-container>
+
+    <!-- Section Modification -->
+    <ng-container *ngIf="activeSection === 'editprofile'">
+      <app-editprofile></app-editprofile>
+    </ng-container>
+
+  </main>
+</div>

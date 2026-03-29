@@ -1,0 +1,37 @@
+<div class="filters">
+  <div class="filter-group">
+    <label for="year">{{ 'STATISTICS_MOIS.YEAR' | translate }}</label>
+    <select id="year" name="year" [(ngModel)]="selectedYear" (change)="applyFilters()">
+      <option value="">{{ 'STATISTICS_MOIS.ALL_YEARS' | translate }}</option>
+      <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="user">{{ 'STATISTICS_MOIS.USER' | translate }}</label>
+    <select id="user" name="user" [(ngModel)]="selectedUser" (change)="applyFilters()">
+      <option value="">{{ 'STATISTICS_MOIS.ALL_USERS' | translate }}</option>
+      <option *ngFor="let u of usersList" [value]="u">{{ u }}</option>
+    </select>
+  </div>
+
+  <button type="button" (click)="refreshData()">{{ 'STATISTICS_MOIS.REFRESH' | translate }}</button>
+</div>
+
+<div *ngIf="isLoading">{{ 'STATISTICS_MOIS.LOADING' | translate }}</div>
+<div *ngIf="!isLoading && loadError" class="error">{{ loadError }}</div>
+
+<div *ngIf="!isLoading && hasData(); else noDataTemplate">
+  <apx-chart
+    [series]="chartOptions.series!"
+    [chart]="chartOptions.chart!"
+    [xaxis]="chartOptions.xaxis!"
+    [stroke]="chartOptions.stroke!"
+    [dataLabels]="chartOptions.dataLabels!"
+    [title]="chartOptions.title!">
+  </apx-chart>
+</div>
+
+<ng-template #noDataTemplate>
+  <p>{{ 'STATISTICS_MOIS.NO_DATA' | translate }}</p>
+</ng-template>

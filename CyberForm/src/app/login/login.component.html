@@ -1,0 +1,75 @@
+<div class="login-page">
+  <div class="left-section">
+    <h1>{{ 'LOGIN.TITLE_LEFT' | translate }}</h1>
+    <p>{{ 'LOGIN.INTRO_1' | translate }}</p>
+    <p class="left-section-sub">{{ 'LOGIN.INTRO_2' | translate }}</p>
+    <img src="assets/images/Image 53.png" [attr.alt]="'LOGIN.ALT_HERO' | translate" />
+  </div>
+
+  <div class="right-section">
+    <div class="login-container">
+      <h2>{{ 'LOGIN.FORM_TITLE' | translate }}</h2>
+      <p>{{ 'LOGIN.FORM_SUB' | translate }}</p>
+      <img src="assets/images/cyberform.png" [attr.alt]="'LOGIN.ALT_LOGO' | translate" />
+
+      <form #form="ngForm" (ngSubmit)="login()" novalidate>
+        <label for="email">{{ 'LOGIN.EMAIL' | translate }}</label>
+        <input type="email" id="email" [placeholder]="'LOGIN.EMAIL_PH' | translate" autocomplete="email"
+          name="email" [(ngModel)]="email" required email #emailRef="ngModel" />
+
+        <div *ngIf="emailRef.invalid && emailRef.touched" class="error">
+          <small *ngIf="emailRef.errors?.['required']">{{ 'LOGIN.EMAIL_REQ' | translate }}</small>
+          <small *ngIf="emailRef.errors?.['email']">{{ 'LOGIN.EMAIL_BAD' | translate }}</small>
+        </div>
+
+        <label for="password">{{ 'LOGIN.PASSWORD' | translate }}</label>
+        <div class="password-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            [placeholder]="'LOGIN.PASSWORD_PH' | translate"
+            autocomplete="current-password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            minlength="8"
+            #passwordRef="ngModel"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="showPassword = !showPassword"
+          >
+            <span
+              class="eye-icon"
+              [ngClass]="{ 'eye-open': showPassword, 'eye-closed': !showPassword }"
+              aria-hidden="true"
+            ></span>
+            <span class="sr-only">
+              {{ showPassword ? ('LOGIN.HIDE_PASSWORD' | translate) : ('LOGIN.SHOW_PASSWORD' | translate) }}
+            </span>
+          </button>
+        </div>
+
+        <div *ngIf="passwordRef.invalid && passwordRef.touched" class="error">
+          <small *ngIf="passwordRef.errors?.['required']">{{ 'LOGIN.PASSWORD_REQ' | translate }}</small>
+          <small *ngIf="passwordRef.errors?.['minlength']">{{ 'LOGIN.PASSWORD_MIN' | translate }}</small>
+        </div>
+
+        <button type="submit" [disabled]="form.invalid">{{ 'LOGIN.SUBMIT' | translate }}</button>
+      </form>
+
+      <div class="remenber-forget">
+        <label>
+          <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
+          {{ 'LOGIN.REMEMBER' | translate }}
+        </label>
+        <a [routerLink]="['/forgot-password']">{{ 'LOGIN.FORGOT' | translate }}</a>
+      </div>
+
+      <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+      <p class="security-note">{{ 'LOGIN.SECURITY_NOTE' | translate }}</p>
+    </div>
+  </div>
+</div>

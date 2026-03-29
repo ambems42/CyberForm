@@ -1,0 +1,8 @@
+bcrypt
+flask>=3.0
+Flask-Limiter>=3.5
+flask-cors
+flask-pymongo
+pymongo
+PyJWT>=2.8.0
+python-dotenv

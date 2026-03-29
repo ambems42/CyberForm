@@ -1,0 +1,32 @@
+<div class="page">
+  <h2>{{ 'SECURITY_PAGE.TITLE' | translate }}</h2>
+
+  <p [innerHTML]="'SECURITY_PAGE.INTRO' | translate | safeHtml"></p>
+
+  <ul>
+    <li>
+      <strong>{{ 'SECURITY_PAGE.L1_T' | translate }}</strong><br />
+      {{ 'SECURITY_PAGE.L1_P' | translate }}
+    </li>
+    <li>
+      <strong>{{ 'SECURITY_PAGE.L2_T' | translate }}</strong><br />
+      {{ 'SECURITY_PAGE.L2_P' | translate }}
+    </li>
+    <li>
+      <strong>{{ 'SECURITY_PAGE.L3_T' | translate }}</strong><br />
+      {{ 'SECURITY_PAGE.L3_P' | translate }}
+    </li>
+    <li>
+      <strong>{{ 'SECURITY_PAGE.L4_T' | translate }}</strong><br />
+      {{ 'SECURITY_PAGE.L4_P' | translate }}
+    </li>
+    <li>
+      <strong>{{ 'SECURITY_PAGE.L5_T' | translate }}</strong><br />
+      {{ 'SECURITY_PAGE.L5_P' | translate }}
+    </li>
+  </ul>
+
+  <p>{{ 'SECURITY_PAGE.OUTRO' | translate }}</p>
+
+  <a routerLink="/" class="back-button">{{ 'COMMON.BACK_HOME' | translate }}</a>
+</div>

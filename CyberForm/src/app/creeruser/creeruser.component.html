@@ -1,0 +1,176 @@
+<div class="creeruser-container">
+  <h2>{{ 'CREERUSER.TITLE' | translate }}</h2>
+
+  <form (ngSubmit)="createUser()" #form="ngForm" novalidate class="creeruser-form">
+    <!-- Bloc Identité -->
+    <section class="form-section">
+      <h3>{{ 'CREERUSER.IDENTITY' | translate }}</h3>
+      <div class="grid-2">
+        <div class="field-group">
+          <label>{{ 'CREERUSER.INTERNAL_ID' | translate }}</label>
+          <input
+            type="text"
+            [placeholder]="'CREERUSER.INTERNAL_ID_PH' | translate"
+            [(ngModel)]="user.userID"
+            name="userID"
+          />
+        </div>
+        <div class="field-group">
+          <label>{{ 'CREERUSER.ROLE_LABEL' | translate }}</label>
+          <select id="role" [(ngModel)]="user.role" name="role" required>
+            <option value="utilisateur">{{ 'CREERUSER.ROLE_USER' | translate }}</option>
+            <option value="admin">{{ 'CREERUSER.ROLE_ADMIN' | translate }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-group">
+          <label>{{ 'CREERUSER.LAST_NAME' | translate }}</label>
+          <input
+            type="text"
+            [placeholder]="'CREERUSER.LAST_NAME_PH' | translate"
+            [(ngModel)]="user.nom"
+            name="nom"
+            required
+          />
+        </div>
+        <div class="field-group">
+          <label>{{ 'CREERUSER.FIRST_NAME' | translate }}</label>
+          <input
+            type="text"
+            [placeholder]="'CREERUSER.FIRST_NAME_PH' | translate"
+            [(ngModel)]="user.prenom"
+            name="prenom"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-group">
+          <label>{{ 'CREERUSER.EMAIL' | translate }}</label>
+          <input
+            type="email"
+            [placeholder]="'CREERUSER.EMAIL_PH' | translate"
+            [(ngModel)]="user.email"
+            name="email"
+            required
+            email
+          />
+        </div>
+        <div class="field-group">
+          <label>{{ 'CREERUSER.PASSWORD_INITIAL' | translate }}</label>
+          <div class="password-wrapper">
+            <input
+              [type]="showPasswords ? 'text' : 'password'"
+              [placeholder]="'CREERUSER.PASSWORD_TEMP_PH' | translate"
+              [(ngModel)]="user.password"
+              name="password"
+              required
+              minlength="8"
+            />
+          </div>
+          <small class="help-password">
+            {{ 'CREERUSER.PASSWORD_HELP' | translate }}
+          </small>
+        </div>
+        <div class="field-group">
+          <label>{{ 'CREERUSER.PASSWORD_CONFIRM' | translate }}</label>
+          <div class="password-wrapper">
+            <input
+              [type]="showPasswords ? 'text' : 'password'"
+              [placeholder]="'CREERUSER.PASSWORD_REPEAT_PH' | translate"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="showPasswords = !showPasswords"
+            >
+              <span
+                class="eye-icon"
+                [ngClass]="{ 'eye-open': showPasswords, 'eye-closed': !showPasswords }"
+                aria-hidden="true"
+              ></span>
+              <span class="sr-only">
+                {{ showPasswords ? ('CREERUSER.HIDE_PASSWORDS' | translate) : ('CREERUSER.SHOW_PASSWORDS' | translate) }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bloc Profil -->
+    <section class="form-section">
+      <h3>{{ 'CREERUSER.PROFILE' | translate }}</h3>
+      <div class="field-group">
+        <label>{{ 'CREERUSER.JOB_LABEL' | translate }}</label>
+        <input
+          type="text"
+          [placeholder]="'CREERUSER.JOB_PH' | translate"
+          [(ngModel)]="user.profil.jobRole"
+          name="jobRole"
+        />
+      </div>
+
+      <div class="field-group">
+        <label>{{ 'CREERUSER.QUALIFICATIONS' | translate }}</label>
+        <textarea
+          [placeholder]="'CREERUSER.QUALIFICATIONS_PH' | translate"
+          [(ngModel)]="user.profil.qualifications[0]"
+          name="qualification_liste">
+        </textarea>
+      </div>
+
+      <div class="field-group">
+        <label>{{ 'CREERUSER.RESPONSIBILITIES' | translate }}</label>
+        <div *ngFor="let resp of user.profil.keyResponsibilities; let i = index" class="responsibility-row">
+          <input
+            type="text"
+            [(ngModel)]="user.profil.keyResponsibilities[i]"
+            [name]="'keyResponsibility' + i"
+            [placeholder]="'CREERUSER.RESP_PH' | translate"
+          />
+        </div>
+        <button type="button" class="secondary-btn" (click)="addResponsibility()">
+          {{ 'CREERUSER.ADD_RESP' | translate }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Bloc Risque -->
+    <section class="form-section">
+      <h3>{{ 'CREERUSER.RISK_PROFILE' | translate }}</h3>
+      <p class="info" [innerHTML]="'CREERUSER.RISK_INFO' | translate | safeHtml"></p>
+
+      <div class="field-group small">
+        <label>{{ 'CREERUSER.RISK_INITIAL' | translate }}</label>
+        <input
+          type="number"
+          [placeholder]="'CREERUSER.RISK_INITIAL_PH' | translate"
+          [(ngModel)]="user.risk_score"
+          name="risk_score"
+        />
+      </div>
+    </section>
+
+    <div class="actions">
+      <button
+        type="submit"
+        [disabled]="form.invalid || user.password !== confirmPassword">
+        {{ 'CREERUSER.SUBMIT' | translate }}
+      </button>
+    </div>
+  </form>
+
+  <p *ngIf="isLoading" class="loading-message">{{ 'CREERUSER.CREATING' | translate }}</p>
+  <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+</div>
+
+<!-- Retour -->
+<button routerLink="/admin" class="back-btn">{{ 'CREERUSER.BACK_ADMIN' | translate }}</button>

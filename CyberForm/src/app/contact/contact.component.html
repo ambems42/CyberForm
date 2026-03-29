@@ -1,0 +1,53 @@
+<div class="page">
+  <h2>{{ 'CONTACT.TITLE' | translate }}</h2>
+
+  <p class="intro">{{ 'CONTACT.INTRO' | translate }}</p>
+
+  <form #contactForm="ngForm" (ngSubmit)="envoyerMessage()" novalidate>
+    <div class="field-group">
+      <label for="nom">{{ 'CONTACT.NAME' | translate }}</label>
+      <input
+        type="text"
+        id="nom"
+        name="nom"
+        [(ngModel)]="contact.nom"
+        required
+        [placeholder]="'CONTACT.NAME_PH' | translate" />
+    </div>
+
+    <div class="field-group">
+      <label for="email">{{ 'CONTACT.EMAIL' | translate }}</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        [(ngModel)]="contact.email"
+        required
+        [placeholder]="'CONTACT.EMAIL_PH' | translate" />
+    </div>
+
+    <div class="field-group">
+      <label for="message">{{ 'CONTACT.MESSAGE' | translate }}</label>
+      <textarea
+        id="message"
+        name="message"
+        rows="5"
+        [(ngModel)]="contact.message"
+        required
+        [placeholder]="'CONTACT.MESSAGE_PH' | translate">
+      </textarea>
+    </div>
+
+    <button type="submit" [disabled]="contactForm.invalid || sending">
+      {{ sending ? ('CONTACT.SENDING' | translate) : ('CONTACT.SEND' | translate) }}
+    </button>
+  </form>
+
+  <p *ngIf="errorMessage" class="error" role="alert">
+    {{ errorMessage }}
+  </p>
+
+  <p *ngIf="confirmation" class="confirmation">
+    {{ 'CONTACT.THANKS' | translate }}
+  </p>
+</div>

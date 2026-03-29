@@ -1,0 +1,17 @@
+.dashboard-comp {
+  padding: 1rem;
+  margin: auto;
+  max-width: auto;
+}
+
+@media screen and (min-width: 768px) {
+  .dashboard-comp {
+    max-width: 700px;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .dashboard-comp {
+    max-width: 1000px;
+  }
+}

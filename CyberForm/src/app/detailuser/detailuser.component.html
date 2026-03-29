@@ -1,0 +1,215 @@
+<div class="du-page">
+  <h2 class="du-title">{{ 'DETAILUSER_PAGE.TITLE' | translate }}</h2>
+
+  <div *ngIf="user">
+    <!-- Profil et synthèse gestionnaire -->
+    <section class="du-card">
+      <h4 class="du-profile-name">{{ user.prenom }} {{ user.nom }}</h4>
+      <p><strong>{{ 'DETAILUSER_PAGE.ID' | translate }}</strong> {{ user.userID }}</p>
+      <p *ngIf="user.email"><strong>{{ 'DETAILUSER_PAGE.EMAIL' | translate }}</strong> {{ user.email }}</p>
+
+      <div *ngIf="user.jobRole || user.qualifications?.length">
+        <p><strong>{{ 'DETAILUSER_PAGE.JOB' | translate }}</strong> {{ user.jobRole || ('DETAILUSER_PAGE.NOT_DEFINED' | translate) }}</p>
+        <p *ngIf="user.qualifications?.length"><strong>{{ 'DETAILUSER_PAGE.QUALIFICATIONS' | translate }}</strong></p>
+        <ul *ngIf="user.qualifications?.length" class="du-pill-list">
+          <li *ngFor="let qualif of user.qualifications">{{ qualif }}</li>
+        </ul>
+        <p *ngIf="user.responsibilities?.length"><strong>{{ 'DETAILUSER_PAGE.RESPONSIBILITIES' | translate }}</strong></p>
+        <ul *ngIf="user.responsibilities?.length" class="du-pill-list">
+          <li *ngFor="let resp of user.responsibilities">{{ resp }}</li>
+        </ul>
+      </div>
+
+
+    </section>
+
+    <!-- Actifs & MITRE côte à côte -->
+    <div class="du-grid-two">
+      <!-- Triade CIA / Actifs (catalogue) -->
+      <section *ngIf="hasAssets" class="du-card">
+        <h4 class="du-heading">{{ 'DETAILUSER_PAGE.ASSETS_CIA' | translate }}</h4>
+        <div *ngFor="let asset of userAssets" class="du-asset-block">
+          <h5 class="du-subheading">{{ asset?.name }}</h5>
+          <ul class="du-pill-list">
+            <li><strong>{{ 'DETAILUSER_PAGE.CONFIDENTIALITY' | translate }}</strong> {{ asset?.classification?.['confidentialité'] ?? '-' }} ({{ 'DETAILUSER_PAGE.SCORE_SHORT' | translate }} {{ asset?.C ?? '-' }})</li>
+            <li><strong>{{ 'DETAILUSER_PAGE.INTEGRITY' | translate }}</strong> {{ asset?.classification?.['intégrité'] ?? '-' }} ({{ 'DETAILUSER_PAGE.SCORE_SHORT' | translate }} {{ asset?.I ?? '-' }})</li>
+            <li><strong>{{ 'DETAILUSER_PAGE.AVAILABILITY' | translate }}</strong> {{ asset?.classification?.['disponibilité'] ?? '-' }} ({{ 'DETAILUSER_PAGE.SCORE_SHORT' | translate }} {{ asset?.D ?? '-' }})</li>
+            <li><strong>{{ 'DETAILUSER_PAGE.IMPACT_TOTAL' | translate }}</strong> {{ (asset?.C ?? 0) + (asset?.I ?? 0) + (asset?.D ?? 0) }}</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Techniques MITRE auxquelles l'utilisateur est exposé -->
+      <section *ngIf="mitreExposure?.assets?.length" class="du-card du-card--stretch">
+        <h4 class="du-heading">{{ 'DETAILUSER_PAGE.MITRE_TITLE' | translate }}</h4>
+        <p class="du-muted">
+          {{ 'DETAILUSER_PAGE.GLOBAL_RISK' | translate }} {{ mitreExposure.globalRiskLevel ?? '-' }}
+          {{ 'DETAILUSER_PAGE.ASSET_COUNT' | translate:{ n: mitreExposure.assetCount } }}
+        </p>
+        <div *ngFor="let asset of mitreExposure.assets" class="du-mitre-asset">
+          <h5 class="du-subheading">{{ asset.asset_name || asset.asset_id }}</h5>
+          <p *ngIf="asset.human_techniques?.length"><strong>{{ 'DETAILUSER_PAGE.HUMAN_TECHNIQUES' | translate }}</strong></p>
+          <ul *ngIf="asset.human_techniques?.length" class="du-mitre-list">
+            <li *ngFor="let t of asset.human_techniques" class="du-mitre-line">
+              <strong>{{ t.technique_id }}</strong> – {{ t.technique_name }}
+              <span *ngIf="t.human_factor != null" class="du-muted du-mitre-meta">
+                {{ 'DETAILUSER_PAGE.HUMAN_FACTOR' | translate:{ v: (t.human_factor | number:'1.0-2') } }}
+              </span>
+              <span *ngIf="t.description" class="du-mitre-desc">: {{ t.description }}</span>
+            </li>
+          </ul>
+          <p *ngIf="asset.non_human_techniques?.length"><strong>{{ 'DETAILUSER_PAGE.OTHER_TECHNIQUES' | translate }}</strong></p>
+          <ul *ngIf="asset.non_human_techniques?.length" class="du-mitre-list">
+            <li *ngFor="let t of asset.non_human_techniques" class="du-mitre-line">
+              <strong>{{ t.technique_id }}</strong> – {{ t.technique_name }}
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <!-- Dernier résultat quiz -->
+    <section class="du-panel" *ngIf="lastQuiz">
+      <h5 class="du-subheading">{{ 'DETAILUSER_PAGE.LAST_RESULT' | translate }}</h5>
+      <p><strong>{{ 'DETAILUSER_PAGE.TYPE' | translate }}</strong> {{ lastQuiz.quiz_type === 'post' ? ('DETAILUSER_PAGE.POST_FORMATION' | translate) : ('DETAILUSER_PAGE.PRE_FORMATION' | translate) }}</p>
+      <p><strong>{{ 'DETAILUSER_PAGE.SCORE' | translate }}</strong> {{ lastQuiz.user_score ?? '-' }} / {{ lastQuiz.total_questions ?? '-' }}</p>
+      <p><strong>{{ 'DETAILUSER_PAGE.NORMALIZED_RISK' | translate }}</strong>
+        <span [ngClass]="getRiskBadge(lastQuiz?.normalized_risk_score)">{{ lastQuiz?.normalized_risk_score ?? '-' }}%</span>
+        <span *ngIf="lastQuiz?.risk_level"> ({{ lastQuiz.risk_level }})</span>
+      </p>
+      <p><strong>{{ 'DETAILUSER_PAGE.OBJECTIVE_REACHED' | translate }}</strong>
+        <span [ngClass]="lastQuiz?.objectifAtteint ? 'du-ok' : 'du-ko'">
+          {{ lastQuiz?.objectifAtteint ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) }}
+        </span>
+      </p>
+      <div *ngIf="lastQuiz?.top_threat" class="du-top-threat">
+        <strong>{{ 'DETAILUSER_PAGE.TOP_THREAT' | translate }}</strong> {{ lastQuiz.top_threat.technique_name }} ({{ lastQuiz.top_threat.technique_id }})
+      </div>
+    </section>
+
+    <section class="du-card du-per-tech-eval" *ngIf="lastQuiz?.per_technique_vulnerability_evaluation?.length">
+      <h4 class="du-heading">{{ 'DETAILUSER_PAGE.PER_TECH_VULN_TITLE' | translate }}</h4>
+      <p class="du-muted">{{ 'DETAILUSER_PAGE.PER_TECH_VULN_SUB' | translate }}</p>
+      <div class="table-wrap">
+        <table class="risk-table du-per-tech-table">
+          <thead>
+            <tr>
+              <th>{{ 'DETAILUSER_PAGE.PER_TECH_COL_ID' | translate }}</th>
+              <th>{{ 'DETAILUSER_PAGE.PER_TECH_COL_NAME' | translate }}</th>
+              <th>{{ 'DETAILUSER_PAGE.PER_TECH_COL_VULN' | translate }}</th>
+              <th>{{ 'DETAILUSER_PAGE.PER_TECH_COL_THRESH' | translate }}</th>
+              <th>{{ 'DETAILUSER_PAGE.PER_TECH_COL_OK' | translate }}</th>
+              <th>{{ 'DETAILUSER_PAGE.PER_TECH_COL_SOURCE' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ev of lastQuiz.per_technique_vulnerability_evaluation" [class.du-row-bad]="ev.threshold_pct != null && !ev.acceptable">
+              <td class="mono">{{ ev.technique_id }}</td>
+              <td>{{ ev.technique_name }}</td>
+              <td>{{ ev.vulnerability_score | number:'1.1-1' }}%</td>
+              <td>{{ ev.threshold_pct != null ? (ev.threshold_pct | number:'1.1-1') + '%' : '—' }}</td>
+              <td>
+                <span [ngClass]="ev.acceptable ? 'du-ok' : 'du-ko'">
+                  {{ ev.acceptable ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) }}
+                </span>
+              </td>
+              <td class="du-small-muted">
+                <ng-container [ngSwitch]="ev.threshold_source">
+                  <span *ngSwitchCase="'per_technique'">{{ 'DETAILUSER_PAGE.SOURCE_PER_TECH' | translate }}</span>
+                  <span *ngSwitchCase="'critical_default'">{{ 'DETAILUSER_PAGE.SOURCE_CRITICAL' | translate }}</span>
+                  <span *ngSwitchDefault>—</span>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tests : liste détaillée avec scores par thread -->
+    <div class="du-quiz-grid">
+      <section class="du-quiz-col">
+        <h4 class="du-heading">{{ 'DETAILUSER_PAGE.TESTS_PRE' | translate }}</h4>
+        <div *ngIf="quizPre.length > 0; else noPreQuiz">
+          <div *ngFor="let quiz of quizPre" class="du-quiz-card">
+            <p><strong>{{ 'DETAILUSER_PAGE.DATE' | translate }}</strong> {{ quiz.date | date:'short' }}</p>
+            <p><strong>{{ 'DETAILUSER_PAGE.SCORE' | translate }}</strong> {{ quiz.user_score }} / {{ quiz.total_questions }}</p>
+            <p><strong>{{ 'HISTORY_USER_PAGE.RISK' | translate }}</strong> {{ quiz.normalized_risk_score ?? '-' }}% <span *ngIf="quiz.risk_level">({{ quiz.risk_level }})</span></p>
+            <p><strong>{{ 'DETAILUSER_PAGE.OBJECTIVE' | translate }}</strong> {{ quiz.objectifAtteint ? ('DETAILUSER_PAGE.OBJ_OK' | translate) : ('DETAILUSER_PAGE.OBJ_NOT' | translate) }}</p>
+            <div *ngIf="quiz.top_threat" class="du-small-muted">{{ 'DETAILUSER_PAGE.MAIN_THREAT' | translate }} {{ quiz.top_threat.technique_name }}</div>
+            <div *ngIf="quiz.required_scores?.length || quiz.user_scores_per_thread?.length" class="du-scores-thread">
+              <span class="du-label">{{ 'DETAILUSER_PAGE.SCORES_BY_THEME' | translate }}</span>
+              <span *ngFor="let us of quiz.user_scores_per_thread" class="du-badge-score">
+                {{ us.technique_id }}: {{ us.score_pct }}%
+              </span>
+            </div>
+            <button type="button" class="du-btn-review" (click)="revoirQuiz(quiz)">{{ 'DETAILUSER_PAGE.VIEW_DETAIL' | translate }}</button>
+          </div>
+        </div>
+        <ng-template #noPreQuiz><p class="du-empty">{{ 'DETAILUSER_PAGE.NO_PRE' | translate }}</p></ng-template>
+      </section>
+
+      <section class="du-quiz-col">
+        <h4 class="du-heading">{{ 'DETAILUSER_PAGE.TESTS_POST' | translate }}</h4>
+        <div *ngIf="quizPost.length > 0; else noPostQuiz">
+          <div *ngFor="let quiz of quizPost" class="du-quiz-card">
+            <p><strong>{{ 'DETAILUSER_PAGE.DATE' | translate }}</strong> {{ quiz.date | date:'short' }}</p>
+            <p><strong>{{ 'DETAILUSER_PAGE.SCORE' | translate }}</strong> {{ quiz.user_score }} / {{ quiz.total_questions }}</p>
+            <p><strong>{{ 'HISTORY_USER_PAGE.RISK' | translate }}</strong> {{ quiz.normalized_risk_score ?? '-' }}% <span *ngIf="quiz.risk_level">({{ quiz.risk_level }})</span></p>
+            <p><strong>{{ 'DETAILUSER_PAGE.OBJECTIVE' | translate }}</strong> {{ quiz.objectifAtteint ? ('DETAILUSER_PAGE.OBJ_OK' | translate) : ('DETAILUSER_PAGE.OBJ_NOT' | translate) }}</p>
+            <div *ngIf="quiz.top_threat" class="du-small-muted">{{ 'DETAILUSER_PAGE.MAIN_THREAT' | translate }} {{ quiz.top_threat.technique_name }}</div>
+            <div *ngIf="quiz.user_scores_per_thread?.length" class="du-scores-thread">
+              <span class="du-label">{{ 'DETAILUSER_PAGE.SCORES_BY_THEME' | translate }}</span>
+              <span *ngFor="let us of quiz.user_scores_per_thread" class="du-badge-score">{{ us.technique_id }}: {{ us.score_pct }}%</span>
+            </div>
+            <button type="button" class="du-btn-review" (click)="revoirQuiz(quiz)">{{ 'DETAILUSER_PAGE.VIEW_DETAIL' | translate }}</button>
+          </div>
+        </div>
+        <ng-template #noPostQuiz><p class="du-empty">{{ 'DETAILUSER_PAGE.NO_POST' | translate }}</p></ng-template>
+      </section>
+    </div>
+
+    <!-- Dernière formation reçue -->
+    <section *ngIf="formation" class="du-training-block">
+      <h5 class="du-subheading">{{ 'DETAILUSER_PAGE.LAST_TRAINING' | translate }}</h5>
+      <div *ngIf="lastTrainingMeta?.quality_metrics || lastTrainingMeta?.learning_summary" class="du-training-meta">
+        <div *ngIf="lastTrainingMeta?.quality_metrics as qm" class="du-training-quality">
+          <span *ngIf="qm.quality_below_threshold" class="du-badge du-badge-warn">{{ 'DETAILUSER_PAGE.BELOW_QUALITY' | translate }}</span>
+          <span class="du-badge">{{ 'DETAILUSER_PAGE.AVG_SCORE' | translate:{ v: (qm.quality_score | number:'1.0-1') } }}</span>
+          <span *ngIf="qm.quality_threshold != null" class="du-badge du-badge-muted">{{ 'DETAILUSER_PAGE.THRESHOLD' | translate:{ v: qm.quality_threshold } }}</span>
+        </div>
+        <ng-container *ngIf="lastTrainingMeta?.learning_summary as ls">
+          <p *ngIf="ls.progress_note" class="du-muted">
+            <strong>{{ 'DETAILUSER_PAGE.PROGRESS' | translate }}</strong> {{ ls.progress_note }}
+          </p>
+          <p *ngIf="ls.post_test_alignment_note" class="du-muted">
+            <strong>{{ 'DETAILUSER_PAGE.POST_TEST' | translate }}</strong> {{ ls.post_test_alignment_note }}
+          </p>
+          <ul *ngIf="ls.techniques?.length" class="du-training-tech">
+            <li *ngFor="let tt of ls.techniques">
+              <code>{{ tt.technique_id }}</code> {{ tt.technique_name }}
+              <span *ngIf="tt.quality_score != null">{{ 'DETAILUSER_PAGE.MODULE_SCORE' | translate:{ v: (tt.quality_score | number:'1.0-0') } }}</span>
+            </li>
+          </ul>
+        </ng-container>
+      </div>
+      <div id="trainingContent" class="du-training-body" [innerHTML]="formation | safeHtml"></div>
+    </section>
+
+    <!-- Historique des formations (texte reçu) -->
+    <section *ngIf="trainingHistory.length" class="du-card du-training-history">
+      <h4 class="du-heading">{{ 'DETAILUSER_PAGE.TRAINING_HISTORY' | translate }}</h4>
+      <p class="du-muted">{{ 'DETAILUSER_PAGE.TRAINING_HISTORY_DESC' | translate }}</p>
+      <div *ngFor="let t of trainingHistory" class="du-training-item">
+        <button type="button" class="du-training-toggle" (click)="toggleTrainingContent(t.training_id)">
+          {{ expandedTrainingId === t.training_id ? ('DETAILUSER_PAGE.HIDE' | translate) : ('DETAILUSER_PAGE.SHOW' | translate) }} – {{ t.date | date:'medium' }} ({{ t.quiz_type === 'post' ? ('DETAILUSER_PAGE.QUIZ_POST' | translate) : ('DETAILUSER_PAGE.QUIZ_PRE' | translate) }})
+        </button>
+        <div *ngIf="expandedTrainingId === t.training_id && t.content" class="du-training-content" [innerHTML]="t.content | safeHtml"></div>
+      </div>
+    </section>
+  </div>
+
+  <p *ngIf="!user" class="du-loading">{{ 'DETAILUSER_PAGE.LOADING' | translate }}</p>
+
+  <button type="button" routerLink="/admin" class="du-btn-back">{{ 'DETAILUSER_PAGE.BACK_ADMIN' | translate }}</button>
+</div>

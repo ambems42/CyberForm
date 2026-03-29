@@ -1,0 +1,368 @@
+/* Layout général : menu à gauche, contenu à droite sans passer en dessous */
+.dashboard-container {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f4f6f9;
+}
+
+/* Menu latéral : largeur fixe, ne rétrécit pas */
+.sidebar {
+  flex: 0 0 280px;
+  min-width: 280px;
+  background-color: #003366;
+  color: white;
+  padding: 2rem 1.2rem;
+  min-height: 100vh;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #e0ecff;
+  color: #003366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.user-header-text h2 {
+  font-size: 1.4rem;
+  margin: 0;
+  color: #ffffff;
+}
+
+.user-subtitle {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+}
+
+.navigation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.navigation-buttons button {
+  background-color: #0059b3;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+  width: 100%;
+}
+
+.navigation-buttons button.active {
+  background: #ffffff;
+  color: #003366;
+}
+
+.navigation-buttons button:hover {
+  background-color: #007bff;
+}
+
+.navigation-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #004a94;
+}
+
+.badge-post {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  background: #ffb703;
+  color: #003366;
+  font-weight: 700;
+}
+
+.post-quiz-banner {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(255, 183, 3, 0.15);
+  border: 1px solid rgba(255, 183, 3, 0.35);
+}
+
+.post-quiz-banner__title {
+  font-weight: 800;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: #ffb703;
+}
+
+.post-quiz-banner__text {
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: #fff;
+  opacity: 0.95;
+}
+
+.post-quiz-banner__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.banner-btn {
+  background-color: #0059b3;
+  color: white;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.banner-btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.banner-btn:hover {
+  background-color: #007bff;
+}
+
+.banner-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Contenu principal : reste à droite, scroll horizontal si besoin (tableaux quiz/risque) */
+.main-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2rem;
+  overflow-x: auto;
+}
+
+/* Boîtes de contenu */
+.profile-box,
+.risk-box,
+.calendar-box,
+.history-box,
+.latest-quiz-box {
+  background-color: white;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  max-width: auto;
+  font-size: 1rem;
+}
+
+/* Titres */
+h3 {
+  color: #003366;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+h4 {
+  color: #222;
+  font-weight: 900;
+  margin-top: 1rem;
+}
+
+/* Texte en couleur selon risque */
+span.low {
+  color: green;
+  font-weight: bold;
+}
+span.medium {
+  color: orange;
+  font-weight: bold;
+}
+span.high {
+  color: red;
+  font-weight: bold;
+}
+
+/* Objectif atteint */
+.yes {
+  color: green;
+  font-weight: bold;
+}
+.no {
+  color: red;
+  font-weight: bold;
+}
+
+/* Historique */
+.history-box ul {
+  list-style: none;
+  padding: 0;
+}
+
+.quiz-info {
+  margin-bottom: 0.6rem;
+}
+
+.review-btn {
+  color: #003366;
+  background: #e6f2ff;
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.review-btn:hover {
+  background-color: #b3d9ff;
+}
+
+/* Filtres */
+.filter-buttons {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-buttons button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2f80ed;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-width: 140px;
+}
+
+.filter-buttons button:hover {
+  background-color: #1c5db8;
+}
+
+/* Dernier quiz */
+.latest-quiz-box {
+  border: 1px solid #ccc;
+  background-color: #f9fbfe;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.latest-quiz-box p {
+  margin: 6px 0;
+}
+
+/* Notifications d'évaluation */
+.eval-banner {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  background: #e0f2fe;
+  color: #0f172a;
+}
+
+.eval-banner.today {
+  border-color: rgba(22, 163, 74, 0.6);
+  background: #dcfce7;
+}
+
+.eval-banner.soon {
+  border-color: rgba(234, 179, 8, 0.7);
+  background: #fef9c3;
+}
+
+.eval-banner__title {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.eval-banner__text {
+  font-size: 0.95rem;
+}
+
+.eval-banner__date {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+}
+
+.eval-banner__actions {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.eval-btn {
+  background-color: #1d4ed8;
+  color: white;
+  border: none;
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.eval-btn.secondary {
+  background-color: transparent;
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.6);
+}
+
+.eval-btn:hover {
+  background-color: #2563eb;
+}
+
+.eval-btn.secondary:hover {
+  background-color: rgba(191, 219, 254, 0.8);
+}
+
+/* Responsive tablette/mobile : menu au-dessus, contenu en dessous */
+@media (max-width: 765px) {
+  .dashboard-container {
+    flex-wrap: wrap;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    flex: none;
+    width: 100%;
+    min-width: unset;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .main-content {
+    padding: 1rem;
+    min-width: unset;
+  }
+
+  .navigation-buttons button {
+    width: 300%;
+    max-width: 300px;
+    margin: 5px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+}

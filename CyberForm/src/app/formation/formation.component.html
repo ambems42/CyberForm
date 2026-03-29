@@ -1,0 +1,44 @@
+<!-- formation.component.html -->
+<div *ngIf="formation; else noFormation" class="formation-container">
+  <div id="trainingContent">
+    <h2>{{ 'FORMATION_PAGE.TITLE' | translate }}</h2>
+    <img src="assets/images/cyberform.png" alt="Logo" class="logo" />
+    <p class="date">{{ 'FORMATION_PAGE.DATE' | translate }} {{ today | date:'dd/MM/yyyy' }}</p>
+
+    <div *ngIf="trainingQuality || trainingLearningSummary" class="formation-meta-panel">
+      <h3>{{ 'FORMATION_PAGE.QUALITY_TITLE' | translate }}</h3>
+      <div *ngIf="trainingQuality as tq" class="formation-quality-pills">
+        <span *ngIf="tq.quality_below_threshold" class="fq-pill fq-warn">{{ 'FORMATION_PAGE.BELOW_QUALITY' | translate }}</span>
+        <span class="fq-pill">{{ 'FORMATION_PAGE.AVG_SCORE' | translate:{ v: (tq.quality_score | number:'1.0-1') } }}</span>
+        <span *ngIf="tq.quality_threshold != null" class="fq-pill fq-muted">{{ 'FORMATION_PAGE.THRESHOLD' | translate:{ v: tq.quality_threshold } }}</span>
+      </div>
+      <div *ngIf="trainingLearningSummary as ls">
+        <p *ngIf="ls.progress_note" class="formation-note"><strong>{{ 'FORMATION_PAGE.PROGRESS' | translate }}</strong> {{ ls.progress_note }}</p>
+        <p *ngIf="ls.post_test_alignment_note" class="formation-note"><strong>{{ 'FORMATION_PAGE.POST_TEST' | translate }}</strong> {{ ls.post_test_alignment_note }}</p>
+        <ul *ngIf="ls.techniques?.length" class="formation-tech-list">
+          <li *ngFor="let t of ls.techniques">
+            <code>{{ t.technique_id }}</code> {{ t.technique_name }}
+            <span *ngIf="t.quality_score != null" class="formation-q">{{ 'FORMATION_PAGE.MODULE_QUALITY' | translate:{ v: (t.quality_score | number:'1.0-0') } }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="formation-content" [innerHTML]="formation | safeHtml"></div>
+  </div>
+
+  <div class="actions">
+    <button (click)="printTraining()">{{ 'FORMATION_PAGE.PRINT' | translate }}</button>
+    <button *ngIf="postQuizRecommended" (click)="startPostQuizFromFormation()">
+      {{ 'FORMATION_PAGE.POST_QUIZ' | translate }}
+    </button>
+  </div>
+</div>
+
+<ng-template #noFormation>
+  <div class="formation-container">
+    <h2>{{ 'FORMATION_PAGE.EMPTY_TITLE' | translate }}</h2>
+    <p>{{ 'FORMATION_PAGE.EMPTY_BODY' | translate }}</p>
+    </div>
+</ng-template>
+

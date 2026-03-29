@@ -1,0 +1,50 @@
+{
+  "stats": {
+    "risk_moyen": 45.3,
+    "nbr_utilisateurs_a_risque": 2,
+    "pourcentage_objectifs_atteints": 66.7,
+    "formations_planifies": 3
+  },
+  "users": [
+    {
+      "basic_info": {
+        "userID": "u001",
+        "jobRole": "Développeur",
+        "diplome": "Master",
+        "experience": "3 ans"
+      },
+      "impact_analysis": {
+        "totalImpact": 7
+      },
+      "resultat": {
+        "user_score": 6
+      },
+      "risk_score": 30.0,
+      "objectifAtteint": true,
+      "lastEvaluationDate": "2025-05-20",
+      "nextEvaluationDate": "2025-06-20",
+      "lastTrainingDate": "2025-05-22",
+      "nextTrainingDate": "2025-06-22"
+    },
+    {
+      "basic_info": {
+        "userID": "u002",
+        "jobRole": "Analyste",
+        "diplome": "Licence",
+        "experience": "5 ans"
+      },
+      "impact_analysis": {
+        "totalImpact": 8
+      },
+      "resultat": {
+        "user_score": 3
+      },
+      "risk_score": 75.0,
+      "objectifAtteint": false,
+      "lastEvaluationDate": "2025-05-18",
+      "nextEvaluationDate": "2025-06-18",
+      "lastTrainingDate": "2025-05-19",
+      "nextTrainingDate": "2025-06-19"
+    }
+  ]
+}

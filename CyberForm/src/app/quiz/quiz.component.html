@@ -1,0 +1,618 @@
+<!-- ACTIFS DE L'UTILISATEUR  -->
+<div class="bg-gray-800 text-white p-4 rounded-xl mb-6 shadow-lg quiz-assets-card">
+  <h2 class="text-xl font-bold mb-3">{{ 'QUIZ.USER_ASSETS_TITLE' | translate }}</h2>
+
+  <ng-container *ngIf="assetsDetails?.length; else noAssets">
+    <div *ngFor="let asset of assetsDetails" class="quiz-asset-row">
+      <h3 class="text-lg font-semibold mb-1">
+        {{ 'QUIZ.ASSET_PREFIX' | translate }} {{ asset.name }}
+      </h3>
+      <p class="text-sm text-gray-200 mb-2">
+        {{ asset.description }}
+      </p>
+    </div>
+  </ng-container>
+
+  <ng-template #noAssets>
+    <p class="text-sm text-gray-300/80">
+      {{ 'QUIZ.NO_ASSETS' | translate }}
+    </p>
+  </ng-template>
+
+  <button type="button" (click)="voirProfilRisque()" *ngIf="!afficherProfilRisque">
+    {{ 'QUIZ.VIEW_RISK_PROFILE' | translate }}
+  </button>
+
+  <div
+    *ngIf="afficherProfilRisque && !profilRisque && profilRisqueWarning"
+    class="mt-6 text-amber-400 text-sm"
+  >
+    {{ profilRisqueWarning }}
+  </div>
+
+  <!-- PROFIL DE RISQUE -->
+  <div *ngIf="afficherProfilRisque && profilRisque" class="mt-6 risk-profile-wrap">
+    <h3>{{ 'QUIZ.RISK_PROFILE_TITLE' | translate }}</h3>
+
+    <p *ngIf="profilRisqueWarning" class="text-amber-400 text-sm mb-2">
+      {{ profilRisqueWarning }}
+    </p>
+
+    <p *ngIf="$any(profilRisque)?.summary" class="risk-profile-summary">
+      {{ $any(profilRisque).summary }}
+    </p>
+
+    <div class="table-wrap risk-profile-table-wrap">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>{{ 'QUIZ.TH_TECHNIQUE' | translate }}</th>
+            <th>{{ 'QUIZ.TH_TECHNIQUE_NAME' | translate }}</th>
+            <th>{{ 'QUIZ.TH_COMPROMISED_ASSET' | translate }}</th>
+            <th>{{ 'QUIZ.TH_TRIAD' | translate }}</th>
+            <th>{{ 'QUIZ.TH_VULN_SCORE' | translate }}</th>
+            <th>{{ 'QUIZ.TH_ASSET_VALUE' | translate }}</th>
+            <!-- <th class="right">I</th>-->
+            <th class="right col-th-t" [attr.title]="'QUIZ.TH_T_HELP' | translate">{{ 'QUIZ.TH_T' | translate }}</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngIf="!riskItems.length">
+            <td colspan="7" class="text-center text-sm text-gray-400 py-4">
+              {{ 'QUIZ.NO_RISK_ROWS' | translate }}
+            </td>
+          </tr>
+
+          <ng-container *ngFor="let r of riskItems; trackBy: trackRisk">
+            <!-- Ligne principale -->
+              <tr class="row-main" (click)="toggle(r)" [class.open]="isOpen(r)">
+              <td class="mono">{{ r.technique_id }}</td>
+              <td>{{ r.technique_name }}</td>
+              <td>{{ r.asset_name }}</td>
+            <!-- Triade concernée -->
+              <td class="cia-cell">{{ getTriadeLabel(r) }}</td>
+
+            <!--  Score de vulnérabilité (0 sans quiz pré terminé — voir displayVulnerabilityScore) -->
+            <td>{{ displayVulnerabilityScore(r) | number:'1.2-2' }}</td>
+
+            <!-- Valeur de l'actif compromis -->
+             <td> {{ getAssetValue(r) }}</td>
+            <!--   <td>{{ r | json }}</td>-->
+          
+            <!-- <td class="right">{{ r.I }} </td> -->
+              <td class="right">{{ r.T | number:'1.2-2' }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+    <button (click)="afficherQuiz = true; genererQuiz()">
+      {{ quizType === 'pre'
+          ? ('QUIZ.BTN_QUIZ_PRE' | translate)
+          : ('QUIZ.BTN_QUIZ_POST_RETRY' | translate) }}
+    </button>
+  </div>
+</div>
+
+<!-- Génération en cours : pas d'ancien quiz affiché -->
+<div
+  *ngIf="afficherQuiz && quizGenerating"
+  class="quiz-loading-banner"
+  role="status"
+  aria-live="polite"
+>
+  <p class="quiz-loading-text">{{ 'QUIZ.GENERATING' | translate }}</p>
+</div>
+
+<div
+  *ngIf="afficherQuiz && quizGenerateError && !quizGenerating && questions.length === 0"
+  class="quiz-error-banner"
+  role="alert"
+>
+  <p>{{ quizGenerateError }}</p>
+  <button type="button" class="secondary" (click)="genererQuiz()">{{ 'QUIZ.RETRY' | translate }}</button>
+</div>
+
+<!-- FORMULAIRE DE QUIZ -->
+<form *ngIf="afficherQuiz && questions.length > 0 && !quizFinished" class="quiz-form">
+  <!-- En-tête -->
+  <div class="quiz-header">
+    <div class="quiz-header-left">
+      <img src="assets/images/cyberform.png" alt="Logo CyberForm" class="logo" />
+      <div class="quiz-title-block">
+        <h2>
+          {{ quizType === 'pre' ? ('QUIZ.TITLE_PRE' | translate) : ('QUIZ.TITLE_POST' | translate) }}
+        </h2>
+        <p class="quiz-subtitle">
+          {{ 'QUIZ.SUBTITLE' | translate }}
+        </p>
+      </div>
+    </div>
+    <div class="quiz-counter">
+      <span>{{ 'QUIZ.QUESTION_COUNTER' | translate:{ current: currentIndex + 1, total: questions.length } }}</span>
+    </div>
+  </div>
+
+  <!-- Métriques qualité / Bloom (API) -->
+  <div *ngIf="quizQuality as qm" class="quiz-quality-banner" role="status">
+    <span
+      *ngIf="qm.quality_below_threshold"
+      class="quality-pill warn"
+      [attr.title]="'QUIZ.QUALITY_BELOW_TITLE' | translate"
+    >
+      {{ 'QUIZ.QUALITY_BELOW' | translate }}
+    </span>
+    <span class="quality-pill" [attr.title]="'QUIZ.QUALITY_AUTO_TITLE' | translate">
+      {{ 'QUIZ.QUALITY_AUTO' | translate:{ v: (qm.quality_score | number:'1.0-0') } }}
+    </span>
+    <span *ngIf="qm.quality_threshold != null" class="quality-pill secondary">
+      {{ 'QUIZ.THRESHOLD_LABEL' | translate:{ v: (qm.quality_threshold | number:'1.0-0') } }}
+    </span>
+    <span *ngIf="qm.bloom_coverage != null" class="quality-pill secondary">
+      {{ 'QUIZ.BLOOM_LABEL' | translate:{ v: qm.bloom_coverage } }}
+    </span>
+    <span *ngIf="qm.technique_unique_count != null" class="quality-pill secondary">
+      {{ 'QUIZ.TECH_COUNT' | translate:{ n: qm.technique_unique_count } }}
+    </span>
+    <span *ngIf="(qm.quality_attempts ?? 0) > 1" class="quality-pill secondary" [attr.title]="'QUIZ.ATTEMPTS_TITLE' | translate">
+      {{ 'QUIZ.ATTEMPTS' | translate:{ n: qm.quality_attempts ?? 0 } }}
+    </span>
+  </div>
+
+  <!-- Alignement quiz post / techniques de la formation -->
+  <div
+    *ngIf="quizType === 'post' && postQuizAlignment"
+    class="post-alignment-banner"
+    [class.post-alignment-ok]="postQuizAlignment.aligned && !postQuizAlignment.noFormationData"
+    [class.post-alignment-warn]="!postQuizAlignment.aligned || postQuizAlignment.noFormationData"
+    role="status"
+  >
+    <strong>{{ 'QUIZ.ALIGN_TITLE' | translate }}</strong>
+    <p *ngIf="postQuizAlignment.noFormationData" class="post-alignment-hint">
+      {{ 'QUIZ.ALIGN_NO_FORMATION' | translate }}
+    </p>
+    <ng-container *ngIf="!postQuizAlignment.noFormationData">
+      <p *ngIf="postQuizAlignment.aligned" class="post-alignment-ok-text">
+        {{ 'QUIZ.ALIGN_OK' | translate }}
+      </p>
+      <div *ngIf="!postQuizAlignment.aligned">
+        <p class="post-alignment-hint">{{ 'QUIZ.ALIGN_MISSING' | translate }}</p>
+        <ul class="post-alignment-list">
+          <li *ngFor="let id of postQuizAlignment.missingInQuiz" class="mono">{{ id }}</li>
+        </ul>
+        <p *ngIf="postQuizAlignment.extraInQuiz.length" class="post-alignment-hint">
+          {{ 'QUIZ.ALIGN_EXTRA' | translate:{ ids: postQuizAlignment.extraInQuiz.join(', ') } }}
+        </p>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Barre de progression -->
+  <div class="progress-bar-container">
+    <div
+      class="progress-bar"
+      [style.width.%]="((currentIndex + 1) / questions.length) * 100"
+    ></div>
+  </div>
+
+  <!-- Question actuelle -->
+  <div class="quiz-question">
+    <p *ngIf="questions[currentIndex]?.techniqueId || questions[currentIndex]?.techniqueName" class="question-technique">
+      <strong>{{ 'QUIZ.TECH_LABEL' | translate }}</strong> {{ questions[currentIndex].techniqueId || '–' }} – {{ questions[currentIndex].techniqueName || '' }}
+    </p>
+    <p *ngIf="questions[currentIndex]?.bloomLabelFr || questions[currentIndex]?.bloomLevel" class="bloom-hint">
+      <strong>{{ 'QUIZ.BLOOM_LEVEL' | translate }}</strong>
+      {{ questions[currentIndex].bloomLabelFr || questions[currentIndex].bloomLevel }}
+    </p>
+    <p *ngIf="questions[currentIndex]?.scenario">
+      <strong>{{ 'QUIZ.SCENARIO' | translate }}</strong> {{ questions[currentIndex].scenario }}
+    </p>
+    <p>
+      <strong>
+        {{ currentIndex + 1 }}.
+        {{
+          questions[currentIndex]?.question
+            .replace('(Vrai/Faux)', '')
+            .trim()
+        }}
+      </strong>
+    </p>
+
+    <!-- Choix multiples -->
+    <div *ngIf="questions[currentIndex]?.choices?.length">
+      <label *ngFor="let opt of questions[currentIndex].choices">
+        <input
+          type="radio"
+          [name]="'q' + currentIndex"
+          [value]="opt"
+          [checked]="answers[currentIndex] === opt"
+          (change)="updateAnswer(currentIndex, opt)"
+          [disabled]="isSubmitted[currentIndex]"
+        />
+        {{ opt }}
+      </label>
+    </div>
+
+    <!-- Vrai / Faux -->
+    <div
+      *ngIf="
+        questions[currentIndex]?.type === 'true_false' &&
+        (!questions[currentIndex]?.choices ||
+          questions[currentIndex]?.choices.length === 0)
+      "
+    >
+      <label>
+        <input
+          type="radio"
+          [name]="'q' + currentIndex"
+          value="Vrai"
+          [checked]="answers[currentIndex] === 'Vrai'"
+          (change)="updateAnswer(currentIndex, 'Vrai')"
+          [disabled]="isSubmitted[currentIndex]"
+        />
+        {{ 'QUIZ.TRUE' | translate }}
+      </label>
+      <label>
+        <input
+          type="radio"
+          [name]="'q' + currentIndex"
+          value="Faux"
+          [checked]="answers[currentIndex] === 'Faux'"
+          (change)="updateAnswer(currentIndex, 'Faux')"
+          [disabled]="isSubmitted[currentIndex]"
+        />
+        {{ 'QUIZ.FALSE' | translate }}
+      </label>
+    </div>
+
+    <!-- Correction -->
+    <div *ngIf="isSubmitted[currentIndex]" class="correction">
+      <p>
+        <strong>{{ 'QUIZ.YOUR_ANSWER' | translate }}</strong>
+        <span *ngIf="answers[currentIndex]; else noAnswer">
+          {{ answers[currentIndex] }}
+        </span>
+        <ng-template #noAnswer><em>{{ 'QUIZ.NO_ANSWER' | translate }}</em></ng-template>
+      </p>
+
+      <p>
+        <strong>{{ 'QUIZ.CORRECT_ANSWER' | translate }}</strong>
+        <span *ngIf="questions[currentIndex]?.correct_answer; else unknown">
+          <strong>{{ questions[currentIndex].correct_answer }}</strong>
+        </span>
+        <ng-template #unknown><em>{{ 'QUIZ.UNKNOWN_ANSWER' | translate }}</em></ng-template>
+      </p>
+
+      <p
+        [ngClass]="{
+          'text-success': isCorrect(currentIndex),
+          'text-danger': !isCorrect(currentIndex)
+        }"
+      >
+        {{ isCorrect(currentIndex) ? ('QUIZ.ANSWER_RESULT_OK' | translate) : ('QUIZ.ANSWER_RESULT_BAD' | translate) }}
+      </p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation-buttons">
+      <button type="button" *ngIf="currentIndex > 0" (click)="prevQuestion()">
+        {{ 'QUIZ.BTN_PREV' | translate }}
+      </button>
+      <button
+        type="button"
+        (click)="submitQuestion()"
+        [disabled]="isSubmitted[currentIndex] || !hasSelectedAnswer(currentIndex)"
+      >
+        {{ 'QUIZ.BTN_SUBMIT' | translate }}
+      </button>
+      <button
+        type="button"
+        *ngIf="isSubmitted[currentIndex] && currentIndex < questions.length - 1"
+        (click)="nextQuestion()"
+      >
+        {{ 'QUIZ.BTN_NEXT' | translate }}
+      </button>
+      <button
+        type="button"
+        *ngIf="currentIndex === questions.length - 1 && isSubmitted[currentIndex]"
+        (click)="finishQuiz()"
+      >
+        {{ 'QUIZ.BTN_FINISH' | translate }}
+      </button>
+    </div>
+  </div>
+</form>
+
+<div *ngIf="quizFinished && result" class="quiz-results">
+  <div class="quiz-results-header">
+    <div>
+      <h3>{{ 'QUIZ.RESULT_DONE' | translate }}</h3>
+      <h2>{{ 'QUIZ.RESULT_TITLE' | translate }}</h2>
+    </div>
+    <div class="quiz-results-summary">
+      <div class="summary-main">
+        <span class="summary-label">{{ 'QUIZ.SUMMARY_SCORE' | translate }}</span>
+        <span class="summary-value">
+          {{ result?.user_score }} / {{ result?.total_questions }}
+        </span>
+      </div>
+      <div class="summary-secondary">
+        <span class="summary-label">{{ 'QUIZ.SUMMARY_VULN' | translate }}</span>
+        <span class="summary-value">
+          {{ result?.vulnerability_score | number:'1.1-1' }}%
+        </span>
+      </div>
+      <div *ngIf="quizQuality?.quality_score != null" class="summary-secondary quiz-quality-recap">
+        <span class="summary-label">{{ 'QUIZ.SUMMARY_QUALITY' | translate }}</span>
+        <span class="summary-value">{{ quizQuality?.quality_score | number:'1.0-0' }} / 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="quizQuality?.bloom_distribution as bloomDist" class="quiz-bloom-recap">
+    <h4>{{ 'QUIZ.BLOOM_DIST' | translate }}</h4>
+    <ul class="bloom-dist-list">
+      <li *ngFor="let e of bloomDist | keyvalue">
+        <span class="mono">{{ e.key }}</span>
+        <span>× {{ e.value }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="getScoresPerThread()?.length" class="result-section scores-per-thread">
+    <h4>{{ 'QUIZ.SCORES_BY_TECHNIQUE' | translate }}</h4>
+    <div class="table-wrap quiz-results-table-wrap">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>{{ 'QUIZ.TH_TECHNIQUE' | translate }}</th>
+            <th>{{ 'QUIZ.TH_NAME' | translate }}</th>
+            <th>{{ 'QUIZ.TH_CORRECT' | translate }}</th>
+            <th>{{ 'QUIZ.TH_TOTAL' | translate }}</th>
+            <th>{{ 'QUIZ.TH_SCORE_PCT' | translate }}</th>
+            <th>{{ 'QUIZ.TH_VULN_SCORE' | translate }} %</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of getScoresPerThread()">
+            <td class="mono">{{ s.technique_id }}</td>
+            <td>{{ s.technique_name }}</td>
+            <td>{{ s.correct_count }}</td>
+            <td>{{ s.total_count }}</td>
+            <td>{{ s.score_pct | number:'1.1-1' }}%</td>
+            <td>{{ (s.vulnerability_score ?? (100 - (s.score_pct ?? 0))) | number:'1.1-1' }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="result?.per_technique_vulnerability_evaluation?.length" class="result-section per-tech-eval-section">
+    <h4>{{ 'QUIZ.PER_TECH_VULN_TITLE' | translate }}</h4>
+    <p class="opacity-70">{{ 'QUIZ.PER_TECH_VULN_SUB' | translate }}</p>
+    <div class="table-wrap quiz-results-table-wrap">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>{{ 'QUIZ.TH_TECHNIQUE' | translate }}</th>
+            <th>{{ 'QUIZ.TH_NAME' | translate }}</th>
+            <th>{{ 'QUIZ.TH_VULN_SCORE' | translate }} %</th>
+            <th>{{ 'QUIZ.PER_TECH_THRESH' | translate }}</th>
+            <th>{{ 'QUIZ.PER_TECH_OK' | translate }}</th>
+            <th>{{ 'QUIZ.PER_TECH_SOURCE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ev of result.per_technique_vulnerability_evaluation" [class.per-tech-bad]="ev.threshold_pct != null && !ev.acceptable">
+            <td class="mono">{{ ev.technique_id }}</td>
+            <td>{{ ev.technique_name }}</td>
+            <td>{{ ev.vulnerability_score | number:'1.1-1' }}%</td>
+            <td>{{ ev.threshold_pct != null ? (ev.threshold_pct | number:'1.1-1') + '%' : '—' }}</td>
+            <td>
+              <span [style.color]="ev.acceptable ? 'green' : 'red'">
+                {{ ev.acceptable ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) }}
+              </span>
+            </td>
+            <td class="opacity-80">
+              <ng-container [ngSwitch]="ev.threshold_source">
+                <span *ngSwitchCase="'per_technique'">{{ 'QUIZ.SOURCE_PER_TECH' | translate }}</span>
+                <span *ngSwitchCase="'critical_default'">{{ 'QUIZ.SOURCE_CRITICAL' | translate }}</span>
+                <span *ngSwitchDefault>—</span>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- <p><strong>Risque global :</strong> {{ getGlobalRisk() | number:'1.2-2' }}</p>-->
+
+  <div class="result-section">
+    <h4>{{ 'QUIZ.RISK_BY_TECHNIQUE' | translate }}</h4>
+    <div class="table-wrap quiz-results-table-wrap">
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>{{ 'QUIZ.TH_TECHNIQUE' | translate }}</th>
+          <th>{{ 'QUIZ.TH_TECHNIQUE_NAME' | translate }}</th>
+          <th>{{ 'QUIZ.TH_TRIAD' | translate }}</th>
+          <th>{{ 'QUIZ.TH_VULN_SCORE' | translate }}</th>
+          <th>{{ 'QUIZ.TH_TRIAD_VALUE' | translate }}</th>
+          <th class="col-th-t" [attr.title]="'QUIZ.TH_T_HELP' | translate">{{ 'QUIZ.TH_T' | translate }}</th>
+          <th>{{ 'QUIZ.TH_LOCAL_RISK' | translate }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let r of riskDetailRows">
+          <td>{{ r.technique_id }}</td>
+          <td>{{ r.technique_name }}</td>
+          <td>{{ r.triade }}</td>
+          <td>{{ r.vulnerability | number:'1.2-2' }}</td>
+          <td>{{ r.triadValue }}</td>
+          <td>{{ r.T | number:'1.2-3' }}</td>
+          <td>{{ r.localRisk | number:'1.2-2' }}</td>
+        </tr>
+
+        <tr class="risk-total">
+          <td colspan="6"><strong>{{ 'QUIZ.ROW_GLOBAL_RISK' | translate }}</strong></td>
+          <td><strong>{{ getGlobalRisk() | number:'1.2-2' }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+ <div class="result-section" *ngIf="result">
+  <h4>{{ 'QUIZ.THRESHOLDS_SECTION' | translate }}</h4>
+
+  <p>
+    <strong>{{ 'QUIZ.LEARNED_THRESHOLD' | translate }}</strong>
+    {{ result?.learned_threshold_pct | number:'1.1-2' }}%
+    <span class="opacity-70" *ngIf="result?.threshold_debug">
+      {{ 'QUIZ.THRESHOLD_DEBUG' | translate:{ k: result?.threshold_debug?.k, w: result?.threshold_debug?.window } }}
+    </span>
+  </p>
+
+  <p>
+    <strong>{{ 'QUIZ.POLICY_THRESHOLD' | translate }}</strong>
+    {{ result?.policy_threshold_pct | number:'1.1-2' }}%
+  </p>
+
+  <p>
+    <strong>{{ 'QUIZ.FINAL_THRESHOLD' | translate }}</strong>
+    {{ result?.final_threshold_pct | number:'1.1-2' }}%
+  </p>
+
+  <p>
+    <strong>{{ 'QUIZ.NORMALIZED_RISK' | translate }}</strong>
+    <span [ngClass]="getRiskClass(result?.risk_norm_pct)">
+      {{ result?.risk_norm_pct | number:'1.1-2' }}%
+    </span>
+  </p>
+</div>
+
+<div class="result-section" *ngIf="result">
+  <h4>{{ 'QUIZ.DECISION_SECTION' | translate }}</h4>
+
+  <p>
+    <strong>{{ 'QUIZ.OBJ_LEARNED' | translate }}</strong>
+    <span [style.color]="result?.objectifAtteint_learned ? 'green' : 'red'">
+      {{ result?.objectifAtteint_learned ? ('QUIZ.ATTAINED' | translate) : ('QUIZ.NOT_ATTAINED' | translate) }}
+    </span>
+  </p>
+
+  <p>
+    <strong>{{ 'QUIZ.OBJ_POLICY' | translate }}</strong>
+    <span [style.color]="result?.objectifAtteint_policy ? 'green' : 'red'">
+      {{ result?.objectifAtteint_policy ? ('QUIZ.ATTAINED' | translate) : ('QUIZ.NOT_ATTAINED' | translate) }}
+    </span>
+  </p>
+
+  <p>
+    <strong>{{ 'QUIZ.DECISION_FINAL' | translate }}</strong>
+    <span [style.color]="result?.objectifAtteint ? 'green' : 'red'">
+      {{ result?.objectifAtteint ? ('QUIZ.OBJ_REACHED' | translate) : ('QUIZ.OBJ_NOT_REACHED' | translate) }}
+    </span>
+  </p>
+
+   <p class="opacity-70">
+    {{ 'QUIZ.FINAL_COMPARE' | translate }}
+    {{ result?.risk_norm_pct | number:'1.1-2' }}%
+    {{ getComparisonSymbol(result?.risk_norm_pct, result?.final_threshold_pct) }}
+    {{ result?.final_threshold_pct | number:'1.1-2' }}%
+  </p>
+
+  <p class="opacity-70">
+    {{ getComparisonMessage(result?.risk_norm_pct, result?.final_threshold_pct) }}
+  </p>
+
+  <div *ngIf="result?.formation_triggered_critical_technique" class="critical-technique-notice">
+    <p><strong>{{ 'QUIZ.CRITICAL_TRAINING_TITLE' | translate }}</strong></p>
+    <p class="opacity-90">{{ 'QUIZ.CRITICAL_TRAINING_DESC' | translate }}</p>
+    <ul *ngIf="result?.critical_techniques_above_threshold?.length">
+      <li *ngFor="let ct of result.critical_techniques_above_threshold">
+        {{ ct.technique_id }} – {{ ct.technique_name }} {{ 'QUIZ.VULN_PART' | translate:{ v: ct.vulnerability_score } }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+  <!-- RETOUR PÉDAGOGIQUE GPT (si tu l’utilises) -->
+  <div *ngIf="quizFinished && result?.feedback" class="feedback-box">
+    <h3>{{ 'QUIZ.FEEDBACK_TITLE' | translate }}</h3>
+    <div [innerHTML]="sanitizeFeedback(result.feedback) | safeHtml"></div>
+  </div>
+
+  <!-- Affichage de la formation -->
+  <div *ngIf="result?.objectifAtteint === false && !afficherFormationManuelle">
+ <!-- <div *ngIf="!result.objectifAtteint && !afficherFormationManuelle">-->
+    <button type="button" (click)="voirFormation()">
+      {{ 'QUIZ.BTN_VIEW_TRAINING' | translate }}
+    </button>
+  </div>
+
+  <div *ngIf="training && afficherFormationManuelle" class="training-section">
+    <img src="assets/images/cyberform.png" alt="Logo" class="logo" />
+    <h2>{{ 'QUIZ.TRAINING_TITLE' | translate }}</h2>
+    <p class="date">{{ 'QUIZ.DATE_LABEL' | translate }} {{ today | date: 'dd/MM/yyyy' }}</p>
+
+    <div *ngIf="trainingQuality || trainingLearningSummary" class="training-meta-panel">
+      <h3>{{ 'QUIZ.TRAINING_QUALITY_TITLE' | translate }}</h3>
+      <div *ngIf="trainingQuality as tq" class="quiz-quality-banner">
+        <span
+          *ngIf="tq.quality_below_threshold"
+          class="quality-pill warn"
+          [attr.title]="'QUIZ.TRAINING_BELOW_TITLE' | translate"
+        >
+          {{ 'QUIZ.TRAINING_BELOW' | translate }}
+        </span>
+        <span class="quality-pill" [attr.title]="'QUIZ.TRAINING_AVG_TITLE' | translate">
+          {{ 'QUIZ.TRAINING_AVG' | translate:{ v: (tq.quality_score | number:'1.0-1') } }}
+        </span>
+        <span *ngIf="tq.quality_threshold != null" class="quality-pill secondary">
+          {{ 'QUIZ.THRESHOLD_LABEL' | translate:{ v: (tq.quality_threshold | number:'1.0-0') } }}
+        </span>
+        <span *ngIf="tq.gpt_validator_enabled" class="quality-pill secondary">{{ 'QUIZ.GPT_VALIDATOR' | translate }}</span>
+      </div>
+      <div *ngIf="trainingLearningSummary as ls" class="training-learning-block">
+        <p *ngIf="ls.progress_note" class="training-learning-note">
+          <strong>{{ 'QUIZ.MEASURE_PROGRESS' | translate }}</strong> {{ ls.progress_note }}
+        </p>
+        <p *ngIf="ls.post_test_alignment_note" class="training-learning-note">
+          <strong>{{ 'FORMATION_PAGE.POST_TEST' | translate }}</strong> {{ ls.post_test_alignment_note }}
+        </p>
+        <p *ngIf="ls.techniques?.length" class="training-techniques-title">
+          <strong>{{ 'QUIZ.TECH_COVERED' | translate }}</strong>
+        </p>
+        <ul *ngIf="ls.techniques?.length" class="training-techniques-list">
+          <li *ngFor="let tt of ls.techniques">
+            <span class="mono">{{ tt.technique_id }}</span>
+            <span *ngIf="tt.technique_name"> — {{ tt.technique_name }}</span>
+            <span *ngIf="tt.quality_score != null" class="training-q-score">
+              {{ 'QUIZ.MODULE_Q' | translate:{ v: (tt.quality_score | number:'1.0-0') } }}
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="trainingContent" class="training-content" [innerHTML]="training | safeHtml"></div>
+
+    <div class="training-actions">
+      <button type="button" (click)="startPostQuiz()">
+        {{ 'QUIZ.BTN_POST_QUIZ' | translate }}
+      </button>
+      <button type="button" class="secondary" (click)="downloadTrainingAsPDF()">
+        {{ 'QUIZ.BTN_DOWNLOAD_PDF' | translate }}
+      </button>
+      <button type="button" (click)="printTraining()">
+        {{ 'QUIZ.BTN_PRINT' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+

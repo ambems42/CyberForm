@@ -1,0 +1,81 @@
+<div class="review-container" *ngIf="quiz">
+
+  <h2>{{ 'REVIEW_QUIZ.TITLE_PREFIX' | translate }}{{ quiz.date | date:'medium' }}</h2>
+
+  <div class="summary">
+    <p><strong>{{ 'REVIEW_QUIZ.SCORE' | translate }}</strong> {{ quiz.user_score }}/{{ quiz.total_questions }}</p>
+    <p><strong>{{ 'REVIEW_QUIZ.TYPE' | translate }}</strong> {{ quiz.quiz_type }}</p>
+    <p><strong>{{ 'REVIEW_QUIZ.RISK_SCORE' | translate }}</strong> {{ getDisplayedRisk() }}%</p>
+    <p><strong>{{ 'REVIEW_QUIZ.VULN_SCORE' | translate }}</strong> {{ quiz.vulnerability_score }}%</p>
+  </div>
+
+  <div *ngFor="let q of quiz.answers; let i = index" class="question-card">
+
+    <p *ngIf="q.scenario">
+      <em><strong>{{ 'REVIEW_QUIZ.SITUATION' | translate }}</strong> {{ q.scenario }}</em>
+    </p>
+
+    <p>
+      <strong>{{ 'REVIEW_QUIZ.QUESTION' | translate:{ n: i + 1 } }}</strong> {{ q.question }}
+    </p>
+
+    <div *ngIf="q.choices?.length">
+      <p><strong>{{ 'REVIEW_QUIZ.CHOICES' | translate }}</strong></p>
+      <ul>
+        <li *ngFor="let choice of q.choices">
+          {{ choice }}
+        </li>
+      </ul>
+    </div>
+
+    <p *ngIf="isAdmin">
+      <strong>{{ 'REVIEW_QUIZ.CORRECT_ANSWER' | translate }}</strong>
+      {{ q.correct_answer || ('REVIEW_QUIZ.NOT_AVAILABLE' | translate) }}
+    </p>
+
+    <p>
+      <strong>{{ 'REVIEW_QUIZ.YOUR_ANSWER' | translate }}</strong>
+      {{ q.selected || ('REVIEW_QUIZ.NO_ANSWER' | translate) }}
+    </p>
+
+    <div [ngClass]="{ 'correct': isCorrect(q), 'incorrect': !isCorrect(q) }">
+      {{ isCorrect(q) ? ('REVIEW_QUIZ.CORRECT' | translate) : ('REVIEW_QUIZ.INCORRECT' | translate) }}
+    </div>
+
+  </div>
+
+  <div *ngIf="isAdmin">
+    <h3>{{ 'REVIEW_QUIZ.SUMMARY' | translate }}</h3>
+
+    <div class="question-resume" *ngFor="let q of quiz.answers; let i = index">
+      <p>
+        <strong>{{ 'REVIEW_QUIZ.Q_PREFIX' | translate:{ n: i + 1 } }}</strong> :
+        <span [ngClass]="{ 'correct': isCorrect(q), 'incorrect': !isCorrect(q) }">
+          {{ isCorrect(q) ? ('REVIEW_QUIZ.GOOD_ANSWER' | translate) : ('REVIEW_QUIZ.BAD_ANSWER' | translate) }}
+          {{ 'REVIEW_QUIZ.ANSWER_LABEL' | translate }}
+        </span>
+      </p>
+    </div>
+
+    <div>
+      <p><strong>{{ 'REVIEW_QUIZ.CORRECT_COUNT' | translate }}</strong> {{ quiz.user_score }}</p>
+      <p><strong>{{ 'REVIEW_QUIZ.INCORRECT_COUNT' | translate }}</strong> {{ quiz.total_questions - quiz.user_score }}</p>
+    </div>
+
+    <div *ngIf="quiz.training">
+      <h3>{{ 'REVIEW_QUIZ.TRAINING_LINKED' | translate }}</h3>
+      <div class="training-content" [innerHTML]="quiz.training | safeHtml"></div>
+    </div>
+  </div>
+
+  <a class="back-link" [routerLink]="isAdmin ? '/admin' : '/user'">{{ 'REVIEW_QUIZ.BACK' | translate }}</a>
+
+</div>
+
+<div *ngIf="loading">
+  {{ 'REVIEW_QUIZ.LOADING' | translate }}
+</div>
+
+<div *ngIf="!quiz && errorMessage" class="error">
+  {{ errorMessage }}
+</div>

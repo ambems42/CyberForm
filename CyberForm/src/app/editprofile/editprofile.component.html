@@ -1,0 +1,29 @@
+<div class="editprofile-container">
+  <h2>{{ 'EDIT_PROFILE.TITLE' | translate }}</h2>
+
+  <form #form="ngForm" (ngSubmit)="updateProfile()" novalidate>
+
+    <label for="lastName">{{ 'EDIT_PROFILE.LAST_NAME' | translate }}</label>
+    <input
+      type="text"
+      id="lastName"
+      name="last_name"
+      [(ngModel)]="last_name"
+      required
+    />
+
+     <label for="firstName">{{ 'EDIT_PROFILE.FIRST_NAME' | translate }}</label>
+    <input
+      type="text"
+      id="firstName"
+      name="first_name"
+      [(ngModel)]="first_name"
+      required
+    />
+
+    <button type="submit" [disabled]="form.invalid">{{ 'EDIT_PROFILE.SAVE' | translate }}</button>
+
+    <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+  </form>
+</div>

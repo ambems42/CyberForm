@@ -1,0 +1,11 @@
+<div class="dashboard-comp" *ngIf="barChartOptions?.series?.length">
+  <apx-chart
+    [series]="barChartOptions.series"
+    [chart]="barChartOptions.chart"
+    [plotOptions]="barChartOptions.plotOptions"
+    [xaxis]="barChartOptions.xaxis"
+    [dataLabels]="barChartOptions.dataLabels"
+    [colors]="barChartOptions.colors"
+    [responsive]="barChartOptions.responsive">
+  </apx-chart>
+</div>

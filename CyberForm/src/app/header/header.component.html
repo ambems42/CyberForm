@@ -1,0 +1,27 @@
+<header class="navbar">
+  <div class="logo">
+    <a routerLink="/"><strong>CyberForm</strong></a>
+  </div>
+
+  <nav class="nav-links">
+    <!-- Sélecteur de langue -->
+  <label for="language-select">{{ 'HEADER.LANGUAGE_SELECT' | translate }}</label>
+  <select id="language-select" [(ngModel)]="selectedLanguage" (change)="switchLanguage()">
+  <option value="fr">Français</option>
+  <option value="en">English</option>
+  <option value="es">Español</option>
+  </select>
+
+    <!-- Liens publics -->
+    <a routerLink="/">{{ 'HEADER.HOME' | translate }}</a>
+    <a routerLink="/about">{{ 'HEADER.ABOUT' | translate }}</a>
+    <a routerLink="/contact">{{ 'HEADER.CONTACT' | translate }}</a>
+
+    <!-- Connexion / Déconnexion -->
+  <a *ngIf="!isConnected" routerLink="/login">{{ 'HEADER.LOGIN' | translate }}</a>
+  <a *ngIf="isConnected && role === 'utilisateur'" routerLink="/user">{{ 'HEADER.USER_SPACE' | translate }}</a>
+  <a *ngIf="isConnected && role === 'admin'" routerLink="/admin">{{ 'HEADER.ADMIN_SPACE' | translate }}</a>
+  <a *ngIf="isConnected" (click)="logout()" class="logout-link">{{ 'HEADER.LOGOUT' | translate }}</a>
+
+</nav>
+</header>

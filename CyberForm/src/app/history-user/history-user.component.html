@@ -1,0 +1,20 @@
+<div class="history-container">
+  <h2>{{ 'HISTORY_USER_PAGE.TITLE' | translate }}</h2>
+
+  <div *ngIf="errorMessage" class="error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="quizHistory.length === 0 && !errorMessage">
+    <p>{{ 'HISTORY_USER_PAGE.EMPTY' | translate }}</p>
+  </div>
+
+  <div *ngFor="let q of quizHistory" class="quiz-item">
+    <h3>{{ 'HISTORY_USER_PAGE.QUIZ_PREFIX' | translate }}{{ q.date | date:'medium' }}</h3>
+    <p><strong>{{ 'HISTORY_USER_PAGE.TYPE' | translate }}</strong> {{ q.result.quiz_type }}</p>
+    <p><strong>{{ 'HISTORY_USER_PAGE.SCORE' | translate }}</strong> {{ q.result.user_score }} / {{ q.result.total_questions }}</p>
+    <p><strong>{{ 'HISTORY_USER_PAGE.RISK' | translate }}</strong> {{ q.result.normalized_risk_score }}%</p>
+
+    <button class="review-btn" (click)="revoirQuiz(q)">{{ 'HISTORY_USER_PAGE.REVIEW_BTN' | translate }}</button>
+  </div>
+</div>
