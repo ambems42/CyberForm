@@ -55,7 +55,13 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-```
+
+Configurer .env
+MONGO_URI=mongodb://localhost:27017/cyberform
+JWT_SECRET=change_me
+OPENAI_API_KEY=your_key_here
+EMAIL_USER=user@example.com
+EMAIL_PASSWORD=change_me
 
 Éditer **`.env`** : au minimum `MONGO_URI`, `JWT_SECRET`, et `OPENAI_API_KEY` si vous utilisez l’IA. Les variables SMTP (`SMTP_*`) servent à la réinitialisation de mot de passe et au formulaire contact — voir les commentaires dans `.env.example`. Ne commitez **jamais** `.env` (déjà listé dans `.gitignore`).
 
@@ -107,6 +113,21 @@ Les fichiers générés sont dans `CyberForm/dist/`. Adaptez le déploiement (se
 | `backend/README_QUIZ_METRICS.md` | Métriques qualité quiz et onglet admin associé |
 
 ## Sécurité
+CyberForm intègre des bonnes pratiques de sécurité dès la conception :
+
+- Aucun secret (mot de passe, clé API) n’est stocké dans le code
+- Les variables sensibles sont stockées dans .env
+.env est ignoré via .gitignore
+- Utilisation de JWT pour l’authentification
+- Possibilité de limiter les requêtes (rate limiting)
+- Séparation frontend / backend
+
+## Bonnes pratiques recommandées
+- Utiliser un JWT_SECRET fort en production
+- Restreindre les origines CORS
+- Régénérer immédiatement toute clé exposée
+- Ne jamais versionner de credentials
+- Utiliser HTTPS en production
 
 - Ne versionnez pas **`.env`**, clés API ni mots de passe.
 - En production, définissez `JWT_SECRET` fort, restreignez `CORS_ORIGINS`, et consultez les variables `CYBERFORM_PRODUCTION` / SMTP dans `.env.example`.
