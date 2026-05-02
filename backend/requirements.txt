@@ -1,5 +1,5 @@
 bcrypt
-flask>=3.0
+flask>=3.1.3
 Flask-Limiter>=3.5
 flask-cors
 flask-pymongo
